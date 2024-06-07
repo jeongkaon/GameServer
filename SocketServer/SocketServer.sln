@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SocketServer", "SocketServer.vcxproj", "{277B6EDD-CD76-4E43-AFF5-12017A331FD1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Debug|x64.ActiveCfg = Debug|x64
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Debug|x64.Build.0 = Debug|x64
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Debug|x86.ActiveCfg = Debug|Win32
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Debug|x86.Build.0 = Debug|Win32
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Release|x64.ActiveCfg = Release|x64
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Release|x64.Build.0 = Release|x64
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Release|x86.ActiveCfg = Release|Win32
+		{277B6EDD-CD76-4E43-AFF5-12017A331FD1}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D69E6CA3-4637-4FCF-A294-C29167F3E862}
+	EndGlobalSection
+EndGlobal
