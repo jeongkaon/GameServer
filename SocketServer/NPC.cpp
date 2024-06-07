@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "NPC.h"
 #include "SessionManager.h"
+#include "LuaFunction.h"
+
 
 int NPC::TotalNpcCount = 0;
 NPC::NPC()
@@ -16,6 +18,7 @@ NPC::NPC()
 
 	_is_active = false;//??
 
+	//TODO. 초기위치 맵에서 찍을거임.
 	_x = rand() % W_WIDTH;
 	_y = rand() % W_HEIGHT;
 
@@ -47,13 +50,31 @@ NPC::NPC(int x, int y)
 
 	sprintf_s(_name, "NPC%d", _id);
 
+	//루아
+
 }
 
 
 void NPC::init()
 {
-	std::cout << "helloword" << std::endl;
-		
+	//TODO.초기위치도 바꿔야함. -> 생성자에 있는거 옮겨오자!
+
+	_L = luaL_newstate();
+
+
+	luaL_openlibs(_L);
+	luaL_loadfile(_L, "npc.lua");
+	lua_pcall(_L, 0, 0, 0);
+
+	lua_getglobal(_L, "set_uid");
+	lua_pushnumber(_L, _id);
+	lua_pcall(_L, 1, 0, 0);
+
+	//lua_register(L, "API_SendMessage", API_SendMessage);
+	lua_register(_L, "API_get_x", API_get_x);
+	lua_register(_L, "API_get_y", API_get_y);
+
+
 }
 
 void NPC::DoRandomMove()
@@ -77,14 +98,8 @@ void NPC::DoRandomMove()
 	_sectorRow = _y / SECTOR_SIZE;
 
 
-
-
 }
 
 
-void NPC::BroadCastingInSection(void* buf)
-{
-
-}
 
 

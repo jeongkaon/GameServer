@@ -11,7 +11,10 @@
 #include <windows.h>  
 #include <concurrent_priority_queue.h>
 
+
+#include "include/lua.hpp"
 #include "define.h"
 
 #pragma comment(lib, "WS2_32.lib")
 #pragma comment(lib, "MSWSock.lib")
+#pragma comment(lib, "lua54.lib")

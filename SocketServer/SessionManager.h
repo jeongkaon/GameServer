@@ -14,10 +14,10 @@ public:
 	static Sector sector[SECTOR_NUM][SECTOR_NUM];
 
 
+
 public:
 	SessionManager();
 	void Init();
-	
 
 	int AcceptClient(SOCKET& socket);
 	int RetNewClientId();
@@ -39,5 +39,6 @@ public:
 
 
 
-};
 
+
+};

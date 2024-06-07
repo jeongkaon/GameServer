@@ -11,7 +11,9 @@ public:
 
 	float _speed;
 	//TODO. 죽는시간 넣어야한다.
-	//TODO. 루아추가애야한다.
+
+	lua_State* _L;
+
 
 	static int TotalNpcCount;
 
@@ -22,7 +24,6 @@ public:
 
 	void init();
 	void DoRandomMove();
-	void BroadCastingInSection(void* buf);
 
 };
 

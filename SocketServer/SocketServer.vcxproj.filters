@@ -54,6 +54,9 @@
     <ClCompile Include="Obejct.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="LuaFunction.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -96,6 +99,9 @@
       <Filter>소스 파일\DataBase</Filter>
     </ClInclude>
     <ClInclude Include="Obejct.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaFunction.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,9 +6,19 @@
 #include "MapManager.h"
 #include "DBConnectionPool.h"
 
+Server* Server::instance = nullptr;
+
 Server::Server()
 {
 	//여기다가 뭘 넣어야할지를 모르겠음..
+}
+
+Server* Server::getInstance()
+{
+	if (nullptr == instance) {
+		instance = new Server();
+	}
+	return instance;
 }
 
 void Server::Init()
@@ -245,4 +255,14 @@ void Server::Worker()
 	}
 }
 
+
+int Server::LuaGetX(int id)
+{
+	return _sessionMgr->objects[id]->_x;
+}
+
+int Server::LuaGetY(int id)
+{
+	return _sessionMgr->objects[id]->_y;
+}
 

@@ -23,3 +23,15 @@ struct GameData {
 	
 };
 
+struct TimerEvent {		//타이머
+	int obj_id;
+	std::chrono::system_clock::time_point wakeup_time;
+	EventType event_id;		//event종류->무엇을에 해당한다->EventType
+	int target_id;
+
+
+	constexpr bool operator < (const TimerEvent& L) const
+	{
+		return (wakeup_time > L.wakeup_time);
+	}
+};

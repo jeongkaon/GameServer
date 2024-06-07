@@ -1,13 +1,36 @@
 #include "stdafx.h"
 #include "SessionManager.h"
+#include "Server.h"
+#include "LuaFunction.h"
 
 using namespace std;
 Sector SessionManager::sector[SECTOR_NUM][SECTOR_NUM]{};
 
+SessionManager::SessionManager()
+{
+	std::cout << "herel!" << std::endl;
+
+
+	//npc이니셜라이즈하기
+	for (int i = 0; i < MAX_USER; ++i) {
+		objects[i] = new Session();
+	}
+	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i) {
+		objects[i] = new NPC();
+	}
+
+}
+
+
 
 void SessionManager::Init()
 {
-	
+	//npc까지 init하는거임
+	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i) {
+		static_cast<NPC*>(objects[i])->init();
+	}
+	std::cout << "NPC 초기화완료\n";
+
 }
 
 int SessionManager::AcceptClient(SOCKET& socket)
@@ -34,21 +57,6 @@ int SessionManager::AcceptClient(SOCKET& socket)
 		return -1;
 	}
 }
-
-SessionManager::SessionManager()
-{
-	std::cout << "herel!" << std::endl;
-
-
-	//npc이니셜라이즈하기
-	for (int i = 0; i < MAX_USER; ++i) {
-		objects[i] = new Session();
-	}
-	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i) {
-		objects[i] = new NPC();
-	}
-}
-
 
 
 int SessionManager::RetNewClientId()
@@ -135,7 +143,7 @@ void SessionManager::LoginSession(int id, char* name)
 				}
 				else {
 					//npc일때
-					Wakeup해줘야함
+					//Wakeup해줘야함
 
 				}
 				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name, 
@@ -210,7 +218,7 @@ void SessionManager::LoginSession(int id, int visual)
 				}
 				else {
 					//npc일때
-					wakeup해줘야함
+					//wakeup해줘야함
 					
 				}
 				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
@@ -223,8 +231,6 @@ void SessionManager::LoginSession(int id, int visual)
 	}
 
 }
-
-
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 {
 
@@ -284,7 +290,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 			}
 		}
 		else {
-			깨운다
+			//깨운다
 		}
 
 		if (old_vlist.count(clientId) == 0) {
@@ -305,7 +311,6 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 
 
 }
-
 void SessionManager::CharChoiceSession(int id)
 {
 	static_cast<Session*>(objects[id])->SendChoiceCharPacket();
@@ -315,7 +320,6 @@ bool SessionManager::CanSee(int from, int to)
 	if (abs(objects[from]->_x - objects[to]->_x) > VIEW_RANGE) return false;
 	return abs(objects[from]->_y - objects[to]->_y) <= VIEW_RANGE;
 }
-
 void SessionManager::disconnect(int key)
 {
 	for (auto& pl : objects) {
@@ -332,7 +336,6 @@ void SessionManager::disconnect(int key)
 	static_cast<Session*>(objects[key])->_state = ST_FREE;
 
 }
-
 void SessionManager::NpcRandomMove(int id)
 {
 	std::unordered_set<int> old_vl;
@@ -408,4 +411,5 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 }
+
 

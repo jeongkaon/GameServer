@@ -132,6 +132,7 @@
     <ClCompile Include="DBConnection.cpp" />
     <ClCompile Include="DBConnectionPool.cpp" />
     <ClCompile Include="ExpOver.cpp" />
+    <ClCompile Include="LuaFunction.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapManager.cpp" />
     <ClCompile Include="NPC.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="DBConnectionPool.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="ExpOver.h" />
+    <ClInclude Include="LuaFunction.h" />
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="Obejct.h" />

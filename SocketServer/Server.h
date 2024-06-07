@@ -9,58 +9,58 @@ class TimerEvent;
 
 class Server
 {
-	int _numThreads;
+private:
+    int _numThreads;
 
-	std::thread _timerThread;
-	std::vector<std::thread> _workerThread;
-	ExpOver a_over;
+    std::thread _timerThread;
+    std::vector<std::thread> _workerThread;
+    ExpOver a_over;
 
-	SOCKET _serverSocket;
-	SOCKET _clientSocket;
+    SOCKET _serverSocket;
+    SOCKET _clientSocket;
 
-	//서버
-	HANDLE _iocp;
+    // 서버
+    HANDLE _iocp;
 
-	WSADATA WSAData;
-	SOCKADDR_IN server_addr;
-	SOCKADDR_IN cl_addr;
-	int addr_size;
+    WSADATA WSAData;
+    SOCKADDR_IN server_addr;
+    SOCKADDR_IN cl_addr;
+    int addr_size;
 
-	//나중에 유니크포인터 사용하는거로 바꿔도될듯?
-	SessionManager* _sessionMgr;
-	PacketManager* _packetMgr;	
-	MapManager* _mapMgr;		
-	DBConnectionPool* _dbConnPool;
-				
-	concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;
+    // 나중에 유니크포인터 사용하는거로 바꿔도될듯?
+    SessionManager* _sessionMgr;
+    PacketManager* _packetMgr;
+    MapManager* _mapMgr;
+    DBConnectionPool* _dbConnPool;
 
+    concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;
+
+    // 정적 멤버 변수로 유일한 인스턴스 보관
+    static Server* instance;
+
+    // private 생성자
+    Server();
+
+    // private 복사 생성자와 대입 연산자 방지
+    Server(const Server&) = delete;
+    Server& operator=(const Server&) = delete;
 
 public:
-	Server();
+    ~Server();
 
-public:
-	void Init();
-	void Start();
-	void Stop();
+    // 인스턴스를 반환하는 정적 메서드
+    static Server* getInstance();
 
-	void Worker();
-	void Timer();
+    void Init();
+    void NpcInit();
+    void Start();
+    void Stop();
 
+    void Worker();
+    void Timer();
+
+    int LuaGetX(int id); 
+    int LuaGetY(int id); 
 };
-
-
-//이걸 어디다둬야하나..
-//타이머스레드가 얘를 꺼내서 한개씩 이벤트를 활성화시킨다.
-//어떤 obj가 언제, 무엇을, 누구에게 해야하는지를 저장하는 구조체
-struct TimerEvent {		//타이머
-	int obj_id;
-	std::chrono::system_clock::time_point wakeup_time;
-	EventType event_id;		//event종류->무엇을에 해당한다->EventType
-	int target_id;
-
-
-	constexpr bool operator < (const TimerEvent& L) const
-	{
-		return (wakeup_time > L.wakeup_time);
-	}
-};
+int API_get_x(lua_State* L);
+int API_get_y(lua_State* L);
