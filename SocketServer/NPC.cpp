@@ -15,13 +15,15 @@ NPC::NPC()
 	_moveType = 0;	
 
 	_is_active = false;//??
-	//위에는 이니셜라이즈 쓰자..
 
 	_x = rand() % W_WIDTH;
 	_y = rand() % W_HEIGHT;
+
 	_sectorCol = _x / SECTOR_SIZE;
 	_sectorRow = _y / SECTOR_SIZE;
 
+	//섹션에 추가해야한다.
+	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
 
 	sprintf_s(_name, "NPC%d", _id);
 
@@ -41,6 +43,7 @@ NPC::NPC(int x, int y)
 	_sectorCol = _x / SECTOR_SIZE;
 	_sectorRow = _y / SECTOR_SIZE;
 
+	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
 
 	sprintf_s(_name, "NPC%d", _id);
 
@@ -55,8 +58,29 @@ void NPC::init()
 
 void NPC::DoRandomMove()
 {
+	short x = _x;
+	short y = _y;
+
+	switch (rand() % 4) {
+	case 0: if (x < (W_WIDTH - 1)) x++; break;
+	case 1: if (x > 0) x--; break;
+	case 2: if (y < (W_HEIGHT - 1)) y++; break;
+	case 3:if (y > 0) y--; break;
+	}
+
+	//TODO. 이동가능한지 아닌지 확인해야함
+	_x = x;
+	_y = y;
+
+
+	_sectorCol = _x / SECTOR_SIZE;
+	_sectorRow = _y / SECTOR_SIZE;
+
+
+
 
 }
+
 
 void NPC::BroadCastingInSection(void* buf)
 {

@@ -9,6 +9,7 @@
 #include <atomic>
 #include <sqlext.h> 
 #include <windows.h>  
+#include <concurrent_priority_queue.h>
 
 #include "define.h"
 

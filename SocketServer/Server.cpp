@@ -87,6 +87,8 @@ void Server::Start()
 	a_over._comp_type = OP_ACCEPT;
 	AcceptEx(_serverSocket, _clientSocket, a_over._send_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
 
+	//타이머스레드 생성
+	_timerThread = std::thread(&Server::Timer, this);
 
 	for (int i = 0; i < _numThreads; ++i)
 		_workerThread.emplace_back(&Server::Worker,this);
@@ -99,6 +101,8 @@ void Server::Start()
 
 void Server::Stop()
 {
+
+	_timerThread.join();
 	for (auto& th : _workerThread)
 		th.join();
 
@@ -110,7 +114,32 @@ void Server::Stop()
 	closesocket(_serverSocket);
 	WSACleanup();
 }
+void Server::Timer()
+{
+	while (true) {
 
+		TimerEvent ev;		//그 구조체임 어디서 선언할지를 모르겟음..
+		auto current_time = chrono::system_clock::now();
+		if (true == _timerQueue.try_pop(ev)) {
+			if (ev.wakeup_time > current_time) {
+				_timerQueue.push(ev);		// 최적화 필요
+												// timer_queue에 다시 넣지 않고 처리해야 한다.
+				this_thread::sleep_for(1ms);  // 실행시간이 아직 안되었으므로 잠시 대기
+				continue;
+			}
+			switch (ev.event_id) {
+			case EV_RANDOM_MOVE:
+				ExpOver* ov = new ExpOver;
+				ov->_comp_type = OP_NPC_MOVE;
+				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
+				break;
+			}
+			continue;		// 즉시 다음 작업 꺼내기
+		}
+		this_thread::sleep_for(1ms);   // timer_queue가 비어 있으니 잠시 기다렸다가 다시 시작
+	}
+
+}
 void Server::Worker()
 {
 	while (true) {
@@ -185,6 +214,29 @@ void Server::Worker()
 			break;
 
 		}
+		case OP_NPC_MOVE: {
+			bool keep_alive = false;
+			for (int j = 0; j < MAX_USER; ++j) {
+				if (_sessionMgr->objects[j]->_state != ST_INGAME) continue;
+				if (_sessionMgr->CanSee(static_cast<int>(key), j)) {
+					keep_alive = true;
+					break;
+				}
+			}
+		
+			if (true == keep_alive) {
+				_sessionMgr->NpcRandomMove(static_cast<int>(key));
+				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
+				_timerQueue.push(ev);
+			}
+			else {
+				static_cast<NPC*>(_sessionMgr->objects[key])->_is_active = false;
+			}
+			delete exOver;
+			break;
+
+		}
+			break;
 		case OP_SEND:
 			delete exOver;
 			break;
@@ -192,3 +244,5 @@ void Server::Worker()
 		}
 	}
 }
+
+

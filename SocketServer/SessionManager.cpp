@@ -115,24 +115,31 @@ void SessionManager::LoginSession(int id, char* name)
 			sector[col + i][row + j].SetObjectList(objs);
 
 			for (int clientId : objs) {
+
+				{
+					lock_guard<mutex> ll(objects[clientId]->_sLock);
+					if (ST_INGAME != objects[clientId]->_state) continue;
+				}
+				if (objects[clientId]->_id == id) continue;
+				if (false == CanSee(id, objects[clientId]->_id)) continue;
+
+
+
+
+				//플레이어일때
 				if (clientId < MAX_USER) {
-					{
-						lock_guard<mutex> ll(objects[clientId]->_sLock);
-						if (ST_INGAME != objects[clientId]->_state) continue;
-					}
-					if (objects[clientId]->_id == id) continue;
 
 					objects[clientId]->SendAddPlayerPacket(
 						id, objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 
-
 				}
 				else {
 					//npc일때
+					Wakeup해줘야함
 
 				}
-				objects[id]->SendAddPlayerPacket(
-					clientId, objects[clientId]->_name, objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
+				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name, 
+					objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
 
 
 	
@@ -183,24 +190,33 @@ void SessionManager::LoginSession(int id, int visual)
 			if (row + j <0 || row + j >SECTOR_NUM) 	continue;
 			sector[col + i][row + j].SetObjectList(objs);
 			for (int clientId : objs) {
+
+				{
+					lock_guard<mutex> ll(objects[clientId]->_sLock);
+					if (ST_INGAME != objects[clientId]->_state) continue;
+				}
+				if (objects[clientId]->_id == id) continue;
+				if (false == CanSee(id, objects[clientId]->_id)) continue;
+
+
+
+
+				//플레이어일때
 				if (clientId < MAX_USER) {
-					{
-						lock_guard<mutex> ll(objects[clientId]->_sLock);
-						if (ST_INGAME != objects[clientId]->_state) continue;
-					}
-					if (objects[clientId]->_id == id) continue;
 
 					objects[clientId]->SendAddPlayerPacket(
 						id, objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 
-
 				}
 				else {
 					//npc일때
-
+					wakeup해줘야함
+					
 				}
-				objects[id]->SendAddPlayerPacket(
-					clientId, objects[clientId]->_name, objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
+				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
+					objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
+
+
 
 			}
 		}
@@ -211,7 +227,6 @@ void SessionManager::LoginSession(int id, int visual)
 
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 {
-	objects[id]->SendMovePacket();
 
 	objects[id]->last_move_time = packet->move_time;
 
@@ -242,48 +257,49 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 		for (int j = -1; j < 1; ++j) {
 			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
 			sector[curCol + i][curRow + j].SetObjectList(objs);
-			//여기서도 쪼개야함..?
 			for (int clientId : objs) {
-				if (clientId < MAX_USER) {
-				//사람일때
-					if (objects[clientId]->_state != ST_INGAME) continue;
-					if (objects[clientId]->_id == id) continue;
-
-
-				}
-				else {
-				//사람이 아닐때
-
-
-				}
+				if (objects[clientId]->_state != ST_INGAME) continue;
+				if (objects[clientId]->_id == id) continue;
 				if (false == CanSee(id, objects[clientId]->_id)) continue;
-
 				new_viewlist.insert(objects[clientId]->_id);
-
-
 			}
 		}
 	}
 
+	objects[id]->SendMovePacket();
+	for (int clientId : new_viewlist) {
+		//플레이어면
+		if (clientId < MAX_USER) {
+			objects[clientId]->_vl.lock();
+			if (objects[clientId]->_viewList.count(id)) {
+				objects[clientId]->_vl.unlock();
+				objects[clientId]->SendMovePacket(id, x, y, objects[id]->last_move_time);
 
-	//방향도 같이 보내야할거같은데?
-	//여기서도 npc와 player따로 해줘야한다.
-	for (int p_id : new_viewlist) {
-		if (0 == old_vlist.count(p_id)) {
-			objects[id]->SendAddPlayerPacket(p_id,objects[p_id]->_name, objects[p_id]->_x, objects[p_id]->_y,
-				objects[p_id]->_visual);
-			objects[p_id]->SendAddPlayerPacket(id, objects[id]->_name, objects[id]->_x, objects[id]->_y, 
-				objects[id]->_visual);
+			}
+			else {
+				objects[clientId]->_vl.unlock();
+				objects[clientId]->SendAddPlayerPacket(id, objects[id]->_name, 
+					objects[id]->_x, objects[id]->_y, objects[id]->_visual);
+					
+			}
 		}
 		else {
-			objects[p_id]->SendMovePacket(id,x,y,objects[id]->last_move_time);
+			깨운다
 		}
+
+		if (old_vlist.count(clientId) == 0) {
+			objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
+				objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
+
+		}
+
 	}
 
-	for (int p_id : old_vlist) {
-		if (0 == new_viewlist.count(p_id)) {
-			objects[id]->SendRemovePlayerPacket(p_id);
-			objects[p_id]->SendRemovePlayerPacket(id);
+
+	for (int clientId : old_vlist) {
+		if (0 == new_viewlist.count(clientId)) {
+			objects[id]->SendRemovePlayerPacket(clientId);
+			if (clientId < MAX_USER) objects[clientId]->SendRemovePlayerPacket(id);
 		}
 	}
 
@@ -315,5 +331,81 @@ void SessionManager::disconnect(int key)
 	lock_guard<mutex> ll(static_cast<Session*>(objects[key])->_sLock);
 	static_cast<Session*>(objects[key])->_state = ST_FREE;
 
+}
+
+void SessionManager::NpcRandomMove(int id)
+{
+	std::unordered_set<int> old_vl;
+	std::unordered_set<int> objs;
+
+	int Col = static_cast<NPC*>(objects[id])->_sectorCol;
+	int Row = static_cast<NPC*>(objects[id])->_sectorRow;
+
+	for (int i = -1; i < 1; ++i) {
+		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
+
+		for (int j = -1; j < 1; ++j) {
+			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
+
+			sector[Col + i][Row + j].SetObjectList(objs);
+			for (int clientId : objs) {
+				if (ST_INGAME != objects[clientId]->_state) continue;
+
+				if (clientId > MAX_USER) continue;
+				if (false == CanSee(objects[id]->_id, objects[clientId]->_id)) continue;
+				old_vl.insert(objects[clientId]->_id);
+
+			}
+		}
+	}
+
+	static_cast<NPC*>(objects[id])->DoRandomMove();
+		
+	Col = static_cast<NPC*>(objects[id])->_sectorCol;
+	Row = static_cast<NPC*>(objects[id])->_sectorRow;
+
+	unordered_set<int> new_viewlist;
+	for (int i = -1; i < 1; ++i) {
+		if (Col + i <0 ||Col + i >SECTOR_NUM) continue;
+
+		for (int j = -1; j < 1; ++j) {
+			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
+			sector[Col + i][Row + j].SetObjectList(objs);
+
+			for (int clientId : objs) {
+				if (objects[clientId]->_state != ST_INGAME) continue;
+				if (objects[clientId]->_id == id) continue;
+				if (false == CanSee(id, objects[clientId]->_id)) continue;
+				new_viewlist.insert(objects[id]->_id);
+			}
+		}
+	}
+
+	//모두에게 알려야한다.
+
+	for (auto pl : new_viewlist) {
+		if (0 == old_vl.count(pl)) {
+			// 플레이어의 시야에 등장
+		
+			objects[pl]->SendAddPlayerPacket(objects[id]->_id,objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
+		}
+		else {
+			// 플레이어가 계속 보고 있음.
+			objects[pl]->SendMovePacket(objects[id]->_id, objects[id]->_x, objects[id]->_y, objects[id]->last_move_time);
+
+		}
+	}
+	for (auto pl : old_vl) {
+		if (0 == new_viewlist.count(pl)) {
+			objects[pl]->_vl.lock();
+			if (0 != objects[pl]->_viewList.count(objects[id]->_id)) {
+				objects[pl]->_vl.unlock();
+				objects[pl]->SendRemovePlayerPacket(objects[id]->_id);
+			}
+			else {
+				objects[pl]->_vl.unlock();
+			}
+		}
+	}
 }
 

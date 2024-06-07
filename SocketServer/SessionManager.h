@@ -34,6 +34,10 @@ public:
 
 	void disconnect(int key);
 
+	//npc°ü·Ã
+	void NpcRandomMove(int id);
+
+
 
 };
 

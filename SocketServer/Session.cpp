@@ -78,13 +78,8 @@ void Session::SendMovePacket(int id, int x, int y, int time)
 
 void Session::SendAddPlayerPacket(int id, char* name, int x, int y, int visual)
 {
-	//인자로 받은 id의 클라이언트가 추가되었다는 정보를 보낸다.
 	//TODO. 다른 정보를 어떻게 받을것인지
-	//그냥 *client를 받을것인지를 생각해봐야함->락걸어야할거같음..
-	
-	//뷰리스트에 추가해야한다.
 
-	//만약 이 함수가 호출된건 해당 섹션에 있다는 이야기니까 뷰리스트에 추가된다.??
 	_vl.lock();
 	_viewList.insert(id);
 	_vl.unlock();
@@ -103,9 +98,6 @@ void Session::SendAddPlayerPacket(int id, char* name, int x, int y, int visual)
 
 void Session::SendRemovePlayerPacket(int id)
 {
-	//id의 클라는 지워야할 클라이언트이다.
-	//해당 세션의 뷰리스트를 일단 락을 걸고 
-	//뷰리스트에 없으면 안지워도되고, 만약 뷰리스트에 있으면 지워야한다.
 	_vl.lock();
 	if (_viewList.count(id)) {
 		_viewList.erase(id);

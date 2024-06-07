@@ -10,6 +10,8 @@ enum SessionState { ST_FREE, ST_ALLOC, ST_INGAME };
 
 enum MapInfo{ POSSIBLE, IMPOSSIBLE};
 
+enum EventType { EV_RANDOM_MOVE };
+
 struct GameData {
 	char user_name[NAME_SIZE];
 	int user_level;
