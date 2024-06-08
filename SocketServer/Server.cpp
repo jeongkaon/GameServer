@@ -158,7 +158,6 @@ void Server::Worker()
 		WSAOVERLAPPED* over = nullptr;
 		BOOL ret = GetQueuedCompletionStatus(_iocp, &num_bytes, &key, &over, INFINITE);
 
-		//&over의 주소로 들어온 클라이언트 구분한다.
 		ExpOver* exOver = reinterpret_cast<ExpOver*>(over);
 		if (FALSE == ret) {
 			if (exOver->_comp_type == OP_ACCEPT) std::cout << "Accept Error";
@@ -180,7 +179,6 @@ void Server::Worker()
 		switch (exOver->_comp_type) {
 
 		case OP_ACCEPT: {
-
 			int clientId = _sessionMgr->AcceptClient(_clientSocket);
 
 			if (-1 != clientId) {
@@ -194,6 +192,7 @@ void Server::Worker()
 				std::cout << "Max user exceeded.\n";
 
 			}
+
 			ZeroMemory(&a_over._over, sizeof(a_over._over));
 			int addr_size = sizeof(SOCKADDR_IN);
 			AcceptEx(_serverSocket, _clientSocket, a_over._send_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
@@ -224,6 +223,10 @@ void Server::Worker()
 			break;
 
 		}
+		case OP_SEND: {
+			delete exOver;
+			break;
+		}
 		case OP_NPC_MOVE: {
 			bool keep_alive = false;
 			for (int j = 0; j < MAX_USER; ++j) {
@@ -246,10 +249,20 @@ void Server::Worker()
 			break;
 
 		}
-			break;
-		case OP_SEND:
+		case OP_PLAYER_MOVE: {
+			_sessionMgr->objects[key]->_sLock.lock();
+
+			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
+
+			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
+			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
+			lua_pcall(L, 1, 0, 0);
+			//lua_pop(L, 1);
+			_sessionMgr->objects[key]->_sLock.unlock();
+
 			delete exOver;
 			break;
+		}
 
 		}
 	}
@@ -264,5 +277,26 @@ int Server::LuaGetX(int id)
 int Server::LuaGetY(int id)
 {
 	return _sessionMgr->objects[id]->_y;
+}
+
+void Server::WakeupNpc(int npc, int player)
+{
+	ExpOver* exover = new ExpOver;
+
+	//한개가 더 추가됨,주위 npc들에게 플레이어가 이동했으니까 ai를 실행하라고 알려줘야한다.
+	exover->_comp_type = OP_PLAYER_MOVE;
+	exover->_ai_target_obj = player;										//waker가 깨웠다. 얘가 깨웟으니까 처리하라고한다.
+	PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);		//이거 오버헤드가 엄청크다. 이 npc가 ai로 스크립트로 돌아가는건지 아닌지 flag을 둬서
+	//스크립트로 돌아가는것만 post해줘야한다. 
+	//여기에 넣으면 worker에서 처리된다.
+
+	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active) return;
+
+	bool old_state = false;
+	if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
+		return;
+	TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
+	_timerQueue.push(ev);
+
 }
 

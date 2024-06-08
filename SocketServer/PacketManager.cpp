@@ -71,7 +71,6 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	{
 	case NONE:
 		//TODO.db에서 받은 자료 토대로 로긴하는거로 변경
-
 		_sessionMgr->LoginSession(id, p->name);
 		break;
 	case NOT_EXIST_IN_DB:
@@ -91,13 +90,6 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	}
 
 
-
-	// 세션매니저(모든세션정보관리)에 추가해준다.
-
-	//로그인 성공하면 맵정보도 보내줘야한다.->아이템정보나 이런거->그려야하니까.
-	//아닌가..?
-	
-
 }
 void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySize)
 {
@@ -114,6 +106,7 @@ void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySiz
 void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 {
 	CS_MOVE_PACKET* packet = reinterpret_cast<CS_MOVE_PACKET*>(buf);
+	_sessionMgr->objects[id]->last_move_time = packet->move_time;
 
 	int x = _sessionMgr->objects[id]->_x;
 	int y = _sessionMgr->objects[id]->_y;

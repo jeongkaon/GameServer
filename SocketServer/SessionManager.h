@@ -3,6 +3,8 @@
 #include "NPC.h"
 #include "Sector.h"
 #include "Obejct.h"
+class Server;
+
 
 
 class SessionManager
@@ -13,6 +15,7 @@ public:
 	//섹터가 npc에게도 필요하다......
 	static Sector sector[SECTOR_NUM][SECTOR_NUM];
 
+	Server* server;
 
 
 public:
@@ -36,6 +39,7 @@ public:
 
 	//npc관련
 	void NpcRandomMove(int id);
+	
 
 
 

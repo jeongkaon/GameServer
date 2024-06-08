@@ -5,7 +5,7 @@ class SessionManager;
 class PacketManager;
 class MapManager;
 class DBConnectionPool;
-class TimerEvent;
+struct TimerEvent;
 
 class Server
 {
@@ -52,15 +52,15 @@ public:
     static Server* getInstance();
 
     void Init();
-    void NpcInit();
     void Start();
     void Stop();
 
     void Worker();
     void Timer();
 
+
     int LuaGetX(int id); 
     int LuaGetY(int id); 
+
+    void WakeupNpc(int npc, int player);
 };
-int API_get_x(lua_State* L);
-int API_get_y(lua_State* L);

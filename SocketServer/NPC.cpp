@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NPC.h"
 #include "SessionManager.h"
+#include "Sector.h"
 #include "LuaFunction.h"
 
 
@@ -8,7 +9,7 @@ int NPC::TotalNpcCount = 0;
 NPC::NPC()
 {
 	_id = MAX_USER + TotalNpcCount++;
-	_state = ST_INGAME;
+	_state = ST_FREE;
 	_x = 0;
 	_y = 0;
 
@@ -34,7 +35,7 @@ NPC::NPC()
 NPC::NPC(int x, int y)
 {
 	_id = MAX_USER + TotalNpcCount++;
-	_state = ST_INGAME;
+	_state = ST_FREE;
 	_x = x;
 	_y = y;
 
@@ -46,7 +47,6 @@ NPC::NPC(int x, int y)
 	_sectorCol = _x / SECTOR_SIZE;
 	_sectorRow = _y / SECTOR_SIZE;
 
-	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
 
 	sprintf_s(_name, "NPC%d", _id);
 
@@ -58,6 +58,8 @@ NPC::NPC(int x, int y)
 void NPC::init()
 {
 	//TODO.초기위치도 바꿔야함. -> 생성자에 있는거 옮겨오자!
+	_state = ST_INGAME;
+	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
 
 	_L = luaL_newstate();
 
@@ -70,7 +72,7 @@ void NPC::init()
 	lua_pushnumber(_L, _id);
 	lua_pcall(_L, 1, 0, 0);
 
-	//lua_register(L, "API_SendMessage", API_SendMessage);
+	lua_register(_L, "API_SendMessage", API_SendMessage);
 	lua_register(_L, "API_get_x", API_get_x);
 	lua_register(_L, "API_get_y", API_get_y);
 
@@ -93,10 +95,17 @@ void NPC::DoRandomMove()
 	_x = x;
 	_y = y;
 
+	int preCol = _sectorCol;
+	int preRow = _sectorRow;
 
-	_sectorCol = _x / SECTOR_SIZE;
-	_sectorRow = _y / SECTOR_SIZE;
+	int curCol = _sectorCol = _x / SECTOR_SIZE;
+	int curRow = _sectorRow = _y / SECTOR_SIZE;
 
+	if (preCol != curCol || preRow != curRow) {
+		SessionManager::sector[preCol][preRow].EraseObjectInSector(_id);
+		SessionManager::sector[curCol][curRow].InsertObjectInSector(_id);
+
+	}
 
 }
 

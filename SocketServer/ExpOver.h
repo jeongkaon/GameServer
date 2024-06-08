@@ -9,7 +9,7 @@ public:
 	char _send_buf[BUF_SIZE];
 	CompleteType _comp_type;
 
-	int _ai_target_obj;			//이건 가지고 있어야하는지 고민..
+	int _ai_target_obj;			
 
 public:
 	ExpOver();

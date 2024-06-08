@@ -93,6 +93,7 @@ public:
 
 	void move(int x, int y) {
 
+
 		//여기서 좌표를 바꾸고, 지금은 픽셀단위로 움직이게 두고
 		//리팩토링할때 프레임단위로 바꾸게하자
 		m_x = x;
@@ -104,9 +105,7 @@ public:
 		switch (direction) {
 		case 2: //<-
 			sprtieY = 1* SPRITE_HEIGHT;
-			spriteX = (count % 4) * (SPRITE_WIDTH);
-			//avatar.move(my_packet->x, my_packet->y);
-			
+			spriteX = (count % 4) * (SPRITE_WIDTH);			
 
 			break;
 		case 3://오른쪽
@@ -241,12 +240,6 @@ void ProcessPacket(char* ptr)
 
 
 		}
-		else if (other_id < MAX_USER) {
-			players[other_id].move(my_packet->x, my_packet->y);
-
-			//여기서 바꿔주면되나?->move패킷보낼때 dir도 같이 보내는거지
-			//players[other_id].spriteX;
-		}
 		else {
 			players[other_id].move(my_packet->x, my_packet->y);
 		}
@@ -347,11 +340,8 @@ void client_main()
 	if (recv_result != sf::Socket::NotReady)
 		if (received > 0) process_data(net_buf, received);
 
-
-	//나랑
-	//다른 클라이언트를 그린다.
-	avatar.draw();
 	for (auto& pl : players) pl.second.draw();
+	avatar.draw();
 
 	//아이디를 그린다.
 	sf::Text text;
@@ -602,14 +592,6 @@ void LoginWindow(sf::RenderWindow& window1, bool& isLoginWindow1Closed)
 //실제 게임블레이창->main으로 옮길까?
 void GameWindow() 
 {
-	/*
-	* TEST용도
-	*/
-
-
-
-	//위에 지워야한다.
-
 
 	sf::Texture backgroundTexture;
 	if (!backgroundTexture.loadFromFile("section1.png"))
@@ -675,19 +657,11 @@ void GameWindow()
 		view.setCenter(viewX, viewY);
 		window.setView(view);
 		window.clear();
-
-
 		window.draw(backgroundSprite);
 		client_main();
 		window.display();
 	}
 	client_finish();
-}
-
-void LoadImage()
-{
-	//TODO 이미지 로딩하기->이미지 클래스 따로만들자.
-	//필요한 리소스들 다 하기
 }
 
 int main()
@@ -698,8 +672,8 @@ int main()
 	}
 	Visuals[0]->loadFromFile("charType2.png");
 	Visuals[1]->loadFromFile("charType1.png");
-	Visuals[2]->loadFromFile("charType1.png");
-	Visuals[3]->loadFromFile("charType1.png");
+	Visuals[2]->loadFromFile("charType3.png");
+	Visuals[3]->loadFromFile("charType4.png");
 
 	wcout.imbue(locale("korean"));
 	sf::Socket::Status status = s_socket.connect("127.0.0.1", PORT_NUM);

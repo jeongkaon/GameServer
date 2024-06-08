@@ -3,13 +3,15 @@
 #include "Server.h"
 #include "LuaFunction.h"
 
+
+
 using namespace std;
 Sector SessionManager::sector[SECTOR_NUM][SECTOR_NUM]{};
 
 SessionManager::SessionManager()
 {
 	std::cout << "herel!" << std::endl;
-
+	server = Server::getInstance();
 
 	//npc이니셜라이즈하기
 	for (int i = 0; i < MAX_USER; ++i) {
@@ -123,7 +125,6 @@ void SessionManager::LoginSession(int id, char* name)
 			sector[col + i][row + j].SetObjectList(objs);
 
 			for (int clientId : objs) {
-
 				{
 					lock_guard<mutex> ll(objects[clientId]->_sLock);
 					if (ST_INGAME != objects[clientId]->_state) continue;
@@ -131,19 +132,15 @@ void SessionManager::LoginSession(int id, char* name)
 				if (objects[clientId]->_id == id) continue;
 				if (false == CanSee(id, objects[clientId]->_id)) continue;
 
-
-
-
 				//플레이어일때
 				if (clientId < MAX_USER) {
-
 					objects[clientId]->SendAddPlayerPacket(
 						id, objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
-
 				}
 				else {
 					//npc일때
 					//Wakeup해줘야함
+					server->WakeupNpc(clientId, id);
 
 				}
 				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name, 
@@ -205,10 +202,6 @@ void SessionManager::LoginSession(int id, int visual)
 				}
 				if (objects[clientId]->_id == id) continue;
 				if (false == CanSee(id, objects[clientId]->_id)) continue;
-
-
-
-
 				//플레이어일때
 				if (clientId < MAX_USER) {
 
@@ -219,6 +212,8 @@ void SessionManager::LoginSession(int id, int visual)
 				else {
 					//npc일때
 					//wakeup해줘야함
+					server->WakeupNpc(clientId, id);
+
 					
 				}
 				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
@@ -233,8 +228,6 @@ void SessionManager::LoginSession(int id, int visual)
 }
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 {
-
-	objects[id]->last_move_time = packet->move_time;
 
 	int x = objects[id]->_x;
 	int y = objects[id]->_y;
@@ -273,6 +266,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 	}
 
 	objects[id]->SendMovePacket();
+
 	for (int clientId : new_viewlist) {
 		//플레이어면
 		if (clientId < MAX_USER) {
@@ -291,6 +285,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 		}
 		else {
 			//깨운다
+			server->WakeupNpc(objects[clientId]->_id, id);
 		}
 
 		if (old_vlist.count(clientId) == 0) {
@@ -338,34 +333,35 @@ void SessionManager::disconnect(int key)
 }
 void SessionManager::NpcRandomMove(int id)
 {
+	int Col = objects[id]->_sectorCol;
+	int Row = objects[id]->_sectorRow;
+
 	std::unordered_set<int> old_vl;
 	std::unordered_set<int> objs;
-
-	int Col = static_cast<NPC*>(objects[id])->_sectorCol;
-	int Row = static_cast<NPC*>(objects[id])->_sectorRow;
 
 	for (int i = -1; i < 1; ++i) {
 		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
 
 		for (int j = -1; j < 1; ++j) {
 			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-
+			
 			sector[Col + i][Row + j].SetObjectList(objs);
+
 			for (int clientId : objs) {
 				if (ST_INGAME != objects[clientId]->_state) continue;
-
-				if (clientId > MAX_USER) continue;
+				if (clientId >= MAX_USER) continue;
 				if (false == CanSee(objects[id]->_id, objects[clientId]->_id)) continue;
 				old_vl.insert(objects[clientId]->_id);
-
 			}
 		}
 	}
-
+	
+	//이동만하고 
 	static_cast<NPC*>(objects[id])->DoRandomMove();
-		
-	Col = static_cast<NPC*>(objects[id])->_sectorCol;
-	Row = static_cast<NPC*>(objects[id])->_sectorRow;
+
+	//섹터검색을해보자
+	Col = objects[id]->_sectorCol;
+	Row = objects[id]->_sectorRow;
 
 	unordered_set<int> new_viewlist;
 	for (int i = -1; i < 1; ++i) {
@@ -379,7 +375,7 @@ void SessionManager::NpcRandomMove(int id)
 				if (objects[clientId]->_state != ST_INGAME) continue;
 				if (objects[clientId]->_id == id) continue;
 				if (false == CanSee(id, objects[clientId]->_id)) continue;
-				new_viewlist.insert(objects[id]->_id);
+				new_viewlist.insert(objects[clientId]->_id);
 			}
 		}
 	}
@@ -388,13 +384,12 @@ void SessionManager::NpcRandomMove(int id)
 
 	for (auto pl : new_viewlist) {
 		if (0 == old_vl.count(pl)) {
-			// 플레이어의 시야에 등장
-		
-			objects[pl]->SendAddPlayerPacket(objects[id]->_id,objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
+			objects[pl]->SendAddPlayerPacket(objects[id]->_id,objects[id]->_name, 
+				objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 		}
 		else {
-			// 플레이어가 계속 보고 있음.
-			objects[pl]->SendMovePacket(objects[id]->_id, objects[id]->_x, objects[id]->_y, objects[id]->last_move_time);
+			objects[pl]->SendMovePacket(objects[id]->_id, 
+				objects[id]->_x, objects[id]->_y, objects[id]->last_move_time);
 
 		}
 	}
@@ -411,5 +406,7 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 }
+
+
 
 
