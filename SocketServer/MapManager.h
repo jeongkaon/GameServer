@@ -5,12 +5,13 @@ class MapManager
 	
 	//bit를 사용하는거로 바꾸자 2000 2000 이니까 
 	//일단 bool로 하고 bit로 바꾸는방법 강구하기
-	bool _moveInfo[150][150]{};
+	std::array<std::array<bool,150>,150> _moveInfo;
+
 
 public:
 	MapManager();
-	void Init();
-	void InitNpc();
+	void InitMapInfo();
+//	void InitNpcInfo();
 
 	bool IsCanGoCheck(int dir, int& x, int& y);
 

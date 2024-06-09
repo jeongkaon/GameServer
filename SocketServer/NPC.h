@@ -3,13 +3,10 @@
 
 class NPC :public Object
 {
+	bool isRoaming;
 public:
-	int _type;
-	int _moveType;
-
-	std::atomic_bool	_is_active;		// 주위에 플레이어가 있는가?
-
-	float _speed;
+	std::atomic_bool	_is_active;		
+	
 	//TODO. 죽는시간 넣어야한다.
 
 	lua_State* _L;
@@ -23,6 +20,8 @@ public:
 	NPC(int x, int y);
 
 	void init();
+	void init(int x, int y, int visual);
+
 	void DoRandomMove();
 
 };

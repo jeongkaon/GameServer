@@ -1,7 +1,7 @@
 #pragma once
 #include "protocol_2024.h"
 
-constexpr int VIEW_RANGE = 10;
+constexpr int VIEW_RANGE = 5;
 constexpr int SECTOR_SIZE = 10;
 constexpr int SECTOR_NUM = W_WIDTH / SECTOR_SIZE;
 

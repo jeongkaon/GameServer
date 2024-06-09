@@ -31,8 +31,6 @@ void PacketManager::Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConne
 	_recvFuntionMap[(int)CS_ATTACK] = &PacketManager::ProcessAttackPacket;
 	_recvFuntionMap[(int)CS_TELEPORT] = &PacketManager::ProcessTeleportPacket;
 	_recvFuntionMap[(int)CS_LOGOUT] = &PacketManager::ProcessLogoutPacket;
-
-
 }
 
 void PacketManager::ProcessRecvPacket(int id, char* buf, int copySize)
@@ -65,13 +63,17 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 	
 	GameData userData{};
+	
+	int res = CheckUserInDB(p->name, userData);
 
-	//구조체를 같이 넘기자
-	switch (CheckUserInDB(p->name, userData))
+	//받은 userData를 기반으로 session정보들 업데이트
+	//TODO. 로긴로직 더 생각해봐야함
+
+	switch (res)
 	{
 	case NONE:
 		//TODO.db에서 받은 자료 토대로 로긴하는거로 변경
-		_sessionMgr->LoginSession(id, p->name);
+		_sessionMgr->LoginSession(id, userData.user_name);
 		break;
 	case NOT_EXIST_IN_DB:
 		//DB에 없으니까 새롭게 생성
@@ -79,8 +81,6 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 
 		break;
 	case NOT_CHOICE_CHARACTER:
-		//비쥬얼 정보를 달라고 요구하는 패킷
-		//지역을 벗어나니까 패킷값이 이상한건가?
 		_sessionMgr->CharChoiceSession(id);
 
 
@@ -90,13 +90,16 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	}
 
 
+
 }
+
 void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySize)
 {
 	CS_CHOICECHAR_PACKET* p = reinterpret_cast<CS_CHOICECHAR_PACKET*>(buf);
 	
 	//캐릭터 정보 저장해야한다. 그리고 로긴 패킷으로 해야함
 	//이름도 념겨야하는디...흠냐
+	//->해당 id에 이미 d
 	_sessionMgr->LoginSession(id, p->visual);
 
 
@@ -118,16 +121,21 @@ void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 		_sessionMgr->MoveSession(id, packet);
 	}
 
-
-
 }
 
 void PacketManager::ProcessChattingPacket(int id, char* buf, int copySize)
 {
+	CS_ATTACK_PACKET* packet = reinterpret_cast<CS_ATTACK_PACKET*>(buf);
+
+	//1.방향에 따라 가야할듯?
+
+	
+
 }
 
 void PacketManager::ProcessAttackPacket(int id, char* buf, int copySize)
 {
+	//
 }
 
 void PacketManager::ProcessTeleportPacket(int id, char* buf, int copySize)

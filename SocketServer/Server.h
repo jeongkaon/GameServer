@@ -35,20 +35,16 @@ private:
 
     concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;
 
-    // 정적 멤버 변수로 유일한 인스턴스 보관
     static Server* instance;
 
-    // private 생성자
     Server();
 
-    // private 복사 생성자와 대입 연산자 방지
     Server(const Server&) = delete;
     Server& operator=(const Server&) = delete;
 
 public:
     ~Server();
 
-    // 인스턴스를 반환하는 정적 메서드
     static Server* getInstance();
 
     void Init();

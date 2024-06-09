@@ -27,11 +27,38 @@ SessionManager::SessionManager()
 
 void SessionManager::Init()
 {
-	//npc까지 init하는거임
-	for (int i = MAX_USER; i < MAX_USER + MAX_NPC; ++i) {
-		static_cast<NPC*>(objects[i])->init();
+
+	//NPC init하는부분
+	ifstream in{ "npc.txt",ios::binary };
+
+	int temp;
+
+	int i = 0;
+	int j = 0;
+
+
+
+///temp에 -가 들어가는디??? 이상한디??
+	while (in >> temp) {
+		_npcInfo[i][j] = temp;
+		++j;
+		if (j >= 150) {
+			++i;
+			j = 0;
+		}
+		if (i >= 150) break;
 	}
-	std::cout << "NPC 초기화완료\n";
+
+	int id = MAX_USER;
+	for (int i = 0; i < 150; ++i) {
+		for (int j = 0; j < 150; ++j) {
+			if (_npcInfo[i][j] == 0) continue;
+
+			static_cast<NPC*>(objects[id++])->init(j, i, _npcInfo[i][j]);
+		}
+	}
+
+	std::cout << "NPC 초기화 테스트중...\n";
 
 }
 
@@ -73,6 +100,15 @@ int SessionManager::RetNewClientId()
 	return -1;
 }
 
+void SessionManager::SetUserGameData(int id, GameData& data)
+{
+	//TODO.로그인할때 이함수 고쳐야함!
+	if (id > MAX_USER) return;
+	
+	strcpy_s(objects[id]->_name, data.user_name);
+
+}
+
 //로그인요청 들어온거 체크해야한다.
 int SessionManager::CheckLoginSession(int id)
 {
@@ -82,6 +118,7 @@ int SessionManager::CheckLoginSession(int id)
 }
 
 //로긴인포 보내기 위한 함수임
+//->밑에 두함수도 합쳐야함->데이터베이스에서 불러온거 기반으로 세팅하는거로
 void SessionManager::LoginSession(int id, char* name)
 {
 	//DB에서 읽어온 구조체를 인자로 받아서 데이터 세팅해야할듯
@@ -153,7 +190,6 @@ void SessionManager::LoginSession(int id, char* name)
 	}
 
 }
-
 void SessionManager::LoginSession(int id, int visual)
 {
 	//TODO. name 변경해야함
@@ -231,8 +267,8 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 
 	int x = objects[id]->_x;
 	int y = objects[id]->_y;
+	char dir = packet->direction;
 
-	//이번과 저번이 다른지 확인해야한다.
 	int preCol = objects[id]->_sectorCol;
 	int preRow = objects[id]->_sectorRow;
 
@@ -265,7 +301,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 		}
 	}
 
-	objects[id]->SendMovePacket();
+	objects[id]->SendMovePacket(dir);
 
 	for (int clientId : new_viewlist) {
 		//플레이어면
@@ -273,7 +309,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 			objects[clientId]->_vl.lock();
 			if (objects[clientId]->_viewList.count(id)) {
 				objects[clientId]->_vl.unlock();
-				objects[clientId]->SendMovePacket(id, x, y, objects[id]->last_move_time);
+				objects[clientId]->SendMovePacket(id, x, y, objects[id]->last_move_time,dir);
 
 			}
 			else {
@@ -356,7 +392,7 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 	
-	//이동만하고 
+	//TODO. 이동->장애물찾기 어케함? ->방향도 추가해주자
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
 	//섹터검색을해보자
@@ -388,8 +424,10 @@ void SessionManager::NpcRandomMove(int id)
 				objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 		}
 		else {
+
+			//맨마지막 dir 어케할지 정해야함->몬스터도 이동하면 방향있으니까 해줘?
 			objects[pl]->SendMovePacket(objects[id]->_id, 
-				objects[id]->_x, objects[id]->_y, objects[id]->last_move_time);
+				objects[id]->_x, objects[id]->_y, objects[id]->last_move_time,objects[id]->_dir);
 
 		}
 	}

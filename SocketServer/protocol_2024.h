@@ -41,6 +41,15 @@ constexpr int LOGIN_FAIL_MAXUSER = 2004;
 constexpr int NOT_EXIST_IN_DB = 2005;
 constexpr int NOT_CHOICE_CHARACTER = 2006;
 
+//MonsterType
+constexpr int PEACE_FIXED = 3001;
+constexpr int PEACE_ROAMING = 3002;
+constexpr int AGRO_FIXED = 3003;
+constexpr int AGRO_ROAMING = 3004;
+
+//
+
+enum DIRECTION { LEFT = 2, RIGHT = 3, UP = 0, DOWN = 1 ,ALL = 5};
 
 
 #pragma pack (push, 1)
@@ -50,6 +59,8 @@ struct PACKET_HEADER {
 	unsigned short size;
 	char	type;
 };
+
+//클라->서버
 struct CS_REGIST_PACKET :public PACKET_HEADER
 {
 	char	name[NAME_SIZE];
@@ -62,6 +73,13 @@ struct CS_CHOICECHAR_PACKET :public PACKET_HEADER
 	int visual;
 };
 
+struct CS_ATTACK_PACKET : public PACKET_HEADER 
+{
+	char	dir;
+
+};
+
+//서버->클라이언트
 struct SC_CHOICECHAR_PACKET :public PACKET_HEADER
 {
 };
@@ -134,6 +152,7 @@ struct SC_MOVE_OBJECT_PACKET {
 	char	type;
 	int		id;
 	short	x, y;
+	char	dir;	//TODO.스프라이트 위해 방향추가->스트레스테스트수정해야함
 	unsigned int move_time;
 };
 

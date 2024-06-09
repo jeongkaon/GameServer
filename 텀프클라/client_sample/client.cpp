@@ -7,7 +7,6 @@
 #include "../../SocketServer/protocol_2024.h"
 
 #include "Button.h"
-#include "Image.h"
 #include "TextBox.h"
 using namespace std;
 
@@ -21,6 +20,8 @@ constexpr auto WINDOW_WIDTH = SCREEN_WIDTH * TILE_WIDTH;   // size of window
 constexpr auto WINDOW_HEIGHT = SCREEN_WIDTH * TILE_WIDTH;
 constexpr auto SPRITE_WIDTH = 64;
 constexpr auto SPRITE_HEIGHT = 384 / 4;
+
+constexpr auto SPRITE_MON_HEIGHT = 256/4;
 
 
 bool isLoginWindow1Closed = false;
@@ -38,6 +39,9 @@ sf::Font g_font;
 sf::View view;
 
 sf::Texture* Visuals[4];
+sf::Texture* MushRoom;
+sf::Texture* backgroundTexture;
+
 
 float viewX;
 float viewY;
@@ -55,19 +59,36 @@ public:
 	int spriteX;
 	int sprtieY;
 
+	int spriteWidth;
+	int spriteHeight;
+
+	
+
 	char name[NAME_SIZE];
 
 	//선택된 캐릭터그거
 	int visual;
 
 	OBJECT(sf::Texture& t, int x, int y, int x2, int y2, int vis) {
+		visual = vis;
 		m_showing = true;
 		m_sprite.setTexture(t);
-		m_sprite.setTextureRect(sf::IntRect(x, y, x + SPRITE_WIDTH, y + SPRITE_HEIGHT));
+		if (vis > 10) {
+			spriteWidth = SPRITE_WIDTH;
+			spriteHeight = SPRITE_MON_HEIGHT;
+
+		}
+		else {
+			spriteWidth = SPRITE_WIDTH;
+			spriteHeight = SPRITE_HEIGHT;
+
+
+		}
+		m_sprite.setTextureRect(sf::IntRect(x, y, x + spriteWidth, y + spriteHeight));
+
 		spriteX = 0;
 		sprtieY = 0;
 		direction = -1;
-		visual = vis;
 
 	}
 	OBJECT() {
@@ -101,26 +122,26 @@ public:
 		float deltaTime = g_clock.restart().asSeconds();
 
 	
-		static int count = 1;
+		static unsigned int count = 1;
 		switch (direction) {
 		case 2: //<-
-			sprtieY = 1* SPRITE_HEIGHT;
-			spriteX = (count % 4) * (SPRITE_WIDTH);			
+			sprtieY = 1* spriteHeight;
+			spriteX = (count % 4) * (spriteWidth);			
 
 			break;
 		case 3://오른쪽
-			sprtieY = 2 * SPRITE_HEIGHT;
-			spriteX = (count % 4) * (SPRITE_WIDTH);
+			sprtieY = 2 * spriteHeight;
+			spriteX = (count % 4) * (spriteWidth);
 
 			break;
 		case 0: //위
-			sprtieY = 3* SPRITE_HEIGHT;
-			spriteX = (count % 4) * (SPRITE_WIDTH);
+			sprtieY = 3* spriteHeight;
+			spriteX = (count % 4) * (spriteWidth);
 
 			break;
 		case 1: //아래
-			sprtieY =0* SPRITE_HEIGHT;
-			spriteX = (count % 4) * (SPRITE_WIDTH);
+			sprtieY =0* spriteHeight;
+			spriteX = (count % 4) * (spriteWidth);
 			break;
 		}
 	
@@ -152,7 +173,7 @@ public:
 		g_window->draw(m_name);
 
 		//스프라이트 바꾸기
-		m_sprite.setTextureRect(sf::IntRect(spriteX, sprtieY, SPRITE_WIDTH, SPRITE_HEIGHT));
+		m_sprite.setTextureRect(sf::IntRect(spriteX, sprtieY, spriteWidth, spriteHeight));
 
 	}
 };
@@ -160,23 +181,6 @@ public:
 OBJECT avatar; 
 
 unordered_map <int, OBJECT> players;
-
-
-//이거에다가 4개 로딩하고 번호대로 가져오는거로하자
-
-
-void client_initialize()
-{
-
-
-	if (false == g_font.loadFromFile("cour.ttf")) {
-		cout << "Font Loading Error!\n";
-		exit(-1);
-	}
-
-
-	avatar = OBJECT{ *Visuals[avatar.visual-1], 0,0, 64 * 4, 384,avatar.visual};
-}
 
 void client_finish()
 {
@@ -216,11 +220,24 @@ void ProcessPacket(char* ptr)
 			avatar.move(my_packet->x, my_packet->y);
 			avatar.show();
 		}
-		else {
+		else if(id <MAX_USER) {
 
 			int visual = my_packet->visual;
 			players[id] = OBJECT{ *Visuals[visual-1], 0, 0, 64 * 4, 384,visual};
 			players[id].visual = visual; 
+			players[id].move(my_packet->x, my_packet->y);
+			players[id].set_name(my_packet->name);
+			players[id].show();
+
+		}
+		else if(id > 0 ){
+			//몬스터임
+			//TODO.서버에서 visual값이 이상하게 들어감 나중에 수정해야함->자료형문제였음
+			int visual = my_packet->visual;
+			players[id] = OBJECT{ *MushRoom, 0, 0, 64 *3, 64*3,visual };
+			players[id].spriteWidth = SPRITE_WIDTH;
+			players[id].spriteHeight = SPRITE_MON_HEIGHT;
+			players[id].visual = visual;
 			players[id].move(my_packet->x, my_packet->y);
 			players[id].set_name(my_packet->name);
 			players[id].show();
@@ -241,7 +258,10 @@ void ProcessPacket(char* ptr)
 
 		}
 		else {
+			players[other_id].direction = my_packet->dir;
 			players[other_id].move(my_packet->x, my_packet->y);
+
+			
 		}
 		break;
 	}
@@ -305,6 +325,7 @@ void send_packet(void* packet)
 
 void NetWork()
 {
+
 	char net_buf[BUF_SIZE];
 	size_t	received;
 
@@ -426,7 +447,8 @@ void SelectCharacterWindow(sf::RenderWindow& window1, bool& isWindow1Closed)
 						}
 
 						isWindow1Closed = true;
-						
+						window1.close();
+
 						break;
 					}
 				}
@@ -593,79 +615,114 @@ void LoginWindow(sf::RenderWindow& window1, bool& isLoginWindow1Closed)
 void GameWindow() 
 {
 
-	sf::Texture backgroundTexture;
-	if (!backgroundTexture.loadFromFile("section1.png"))
-	{
-		std::cerr << "Error loading background image" << std::endl;
-	}
 
 	// 스프라이트 생성 및 텍스처 설정
 	sf::Sprite backgroundSprite;
-	backgroundSprite.setTexture(backgroundTexture);
+	backgroundSprite.setTexture(*backgroundTexture);
 
-
-	//입장하면 클라이언트 이니셜라이즈하고 로긴패킷을 보낸다.
-	client_initialize();
-
-	//메인윈도우설정하는거임.
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "KAON'S GAME");
 	g_window = &window;
 
+	avatar = OBJECT{ *Visuals[avatar.visual - 1], 0,0, 64 * 4, 384,avatar.visual };
+
+
 	//뷰설정
-	view = window.getDefaultView();
-	while (window.isOpen())
+	view = g_window->getDefaultView();
+	while (g_window->isOpen())
 	{
 
 		sf::Event event;
-		while (window.pollEvent(event))
+		while (g_window->pollEvent(event))
 		{
 
 			if (event.type == sf::Event::Closed)
-				window.close();
+				g_window->close();
 			if (event.type == sf::Event::KeyPressed) {
 				switch (event.key.code) {
-				case sf::Keyboard::Left:
-					avatar.direction = 2;
 
-					break;
-				case sf::Keyboard::Right:
-					avatar.direction = 3;
 
-					break;
-				case sf::Keyboard::Up:
-					avatar.direction = 0;
-					break;
-				case sf::Keyboard::Down:
-					avatar.direction = 1;
-
-					break;
-				case sf::Keyboard::Escape:
-					window.close();
-					break;
-				}
-
-				if (-1 != avatar.direction) {
+				case sf::Keyboard::Left: 
+				{
+					avatar.direction = LEFT;
 					CS_MOVE_PACKET p;
 					p.size = sizeof(p);
 					p.type = CS_MOVE;
 					p.direction = avatar.direction;
 					send_packet(&p);
+
+					break;
 				}
+				case sf::Keyboard::Right:
+				{
+					avatar.direction = RIGHT;
+					CS_MOVE_PACKET p;
+					p.size = sizeof(p);
+					p.type = CS_MOVE; p.direction = avatar.direction;
+					send_packet(&p);
+
+				}
+					break;
+				case sf::Keyboard::Up:
+				{
+					avatar.direction = UP;
+					CS_MOVE_PACKET p;
+					p.size = sizeof(p);
+					p.type = CS_MOVE;
+					p.direction = avatar.direction;
+					send_packet(&p);
+
+					break;
+				}
+				case sf::Keyboard::Down:
+				{
+					avatar.direction = DOWN;
+					CS_MOVE_PACKET p;
+					p.size = sizeof(p);
+					p.type = CS_MOVE;
+					p.direction = avatar.direction;
+					send_packet(&p);
+
+					break;
+				}
+				case sf::Keyboard::Escape:
+					g_window->close();
+					break;
+
+
+				case sf::Keyboard::A:
+				{
+					std::cout << "공격키 누름\n";
+					//이벡트나 터뜨리자.
+					CS_ATTACK_PACKET p;
+					p.size = sizeof(p);
+					p.type = CS_ATTACK;
+					p.dir = ALL;
+
+					//맞은지 아닌지는 서버에서 해보쟈.
+
+					break;
+				}
+				default:
+					break;
+				}
+
 
 			}
 		}
 		view.setCenter(viewX, viewY);
-		window.setView(view);
-		window.clear();
-		window.draw(backgroundSprite);
+		g_window->setView(view);
+		g_window->clear();
+		g_window->draw(backgroundSprite);
 		client_main();
-		window.display();
+		g_window->display();
 	}
 	client_finish();
 }
 
 int main()
 {
+
+	//이미지 로딩 먼저 해놓자
 	//캐릭터사진 초기화
 	for (int i = 0; i < 4; ++i) {
 		Visuals[i] = new sf::Texture;
@@ -674,6 +731,16 @@ int main()
 	Visuals[1]->loadFromFile("charType1.png");
 	Visuals[2]->loadFromFile("charType3.png");
 	Visuals[3]->loadFromFile("charType4.png");
+
+	MushRoom = new sf::Texture;
+	MushRoom->loadFromFile("slime_monster.png");
+	backgroundTexture = new sf::Texture;
+
+	//이거 로딩이 너무 느림.... 백그라운드로 빼고시푼디...
+	if (!backgroundTexture->loadFromFile("section1.png"))
+	{
+		std::cerr << "Error loading background image" << std::endl;
+	}
 
 	wcout.imbue(locale("korean"));
 	sf::Socket::Status status = s_socket.connect("127.0.0.1", PORT_NUM);
@@ -693,6 +760,7 @@ int main()
 
 	LoginWindow(window1, isLoginWindow1Closed);
 
+
 	// 첫 번째 창이 닫혔는지 확인 후 두 번째 창 실행
 	if (isLoginWindow1Closed) {
 		sf::RenderWindow window2(sf::VideoMode(800, 600), "Window 2");
@@ -700,6 +768,7 @@ int main()
 	}
 
 	if (isSelectWindow1Closed) {
+		//로딩이 너무 느린데???
 		GameWindow();
 	}
 

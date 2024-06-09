@@ -24,10 +24,11 @@ Server* Server::getInstance()
 void Server::Init()
 {
 	_mapMgr = new MapManager();
-	_mapMgr->Init();
+	_mapMgr->InitMapInfo();
+	//_mapMgr->InitNpcInfo();
 
 	_sessionMgr = new SessionManager();
-	_sessionMgr->Init();
+	_sessionMgr->Init();		//npc 정보를 받아야한다.
 
 	_dbConnPool = new DBConnectionPool();
 	_dbConnPool->Connect(10, L"2024_TF_GS");
@@ -164,7 +165,6 @@ void Server::Worker()
 			else {
 				std::cout << "GQCS Error on client[" << key << "]\n";
 
-				//디스커넥트는 세션매니저가 가지고 있어야할듯??><
 				_sessionMgr->disconnect(static_cast<int>(key));
 				if (exOver->_comp_type == OP_SEND) delete exOver;
 				continue;
@@ -207,7 +207,11 @@ void Server::Worker()
 			int remain_data = num_bytes + static_cast<Session*>(_sessionMgr->objects[key])->_prevRemain;
 			char* p = exOver->_send_buf;
 			while (remain_data > 0) {
-				int packet_size = p[0];
+				//TODO.패킷프로토콜 기존 char -> short로 바꿈 ->수정완료
+				short* pSize = (short*)&p[0];
+				int packet_size = *pSize;
+
+
 				if (packet_size <= remain_data) {
 					_packetMgr->ProcessRecvPacket(static_cast<int>(key), p, packet_size);
 					p = p + packet_size;
@@ -238,6 +242,8 @@ void Server::Worker()
 			}
 		
 			if (true == keep_alive) {
+				if (_sessionMgr->objects[static_cast<int>(key)]->_visual == PEACE_FIXED) break;
+
 				_sessionMgr->NpcRandomMove(static_cast<int>(key));
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
 				_timerQueue.push(ev);

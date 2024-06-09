@@ -45,13 +45,13 @@ void Session::SendLoginPacket()
 	DoSend(&p);
 }
 
-void Session::SendMovePacket()
+void Session::SendMovePacket(char dir)
 {
 	SC_MOVE_OBJECT_PACKET p;
 	p.id = _id;
 	p.size = sizeof(SC_MOVE_OBJECT_PACKET);
 	p.type = SC_MOVE_OBJECT;
-
+	p.dir = dir;
 	p.x = _x;		
 	p.y = _y;
 
@@ -59,14 +59,14 @@ void Session::SendMovePacket()
 	DoSend(&p);
 }
 
-void Session::SendMovePacket(int id, int x, int y, int time)
+void Session::SendMovePacket(int id, int x, int y, int time,char dir)
 {
 
 	SC_MOVE_OBJECT_PACKET p;
 	p.id = id;
 	p.size = sizeof(SC_MOVE_OBJECT_PACKET);
 	p.type = SC_MOVE_OBJECT;
-
+	p.dir = dir;
 	p.x = x;
 	p.y = y;
 
@@ -91,8 +91,8 @@ void Session::SendAddPlayerPacket(int id, char* name, int x, int y, int visual)
 	add_packet.type = SC_ADD_OBJECT;
 	add_packet.x = x;
 	add_packet.y = y;
-
 	add_packet.visual = visual;
+
 	DoSend(&add_packet);
 }
 

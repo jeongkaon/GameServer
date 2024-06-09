@@ -2,7 +2,6 @@
 #include "LuaFunction.h"
 #include "Server.h"
 
-
 int API_get_x(lua_State* L)
 {
 	int id = (int)lua_tointeger(L, -1);

@@ -20,6 +20,7 @@ public:
 	short _x, _y;
 	int _visual;
 	int _hp;
+	
 
 	char _dir;
 
@@ -28,8 +29,8 @@ public:
 
 	virtual void SendLoginPacket(){}
 	virtual void SendAddPlayerPacket(int , char* ,int,int , int){}
-	virtual void SendMovePacket(){}
-	virtual void SendMovePacket(int, int ,int ,int) {}
+	virtual void SendMovePacket(char dir){}
+	virtual void SendMovePacket(int, int ,int ,int, char) {}
 
 	virtual void SendRemovePlayerPacket(int){}
 };
