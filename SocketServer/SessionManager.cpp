@@ -262,6 +262,8 @@ void SessionManager::LoginSession(int id, int visual)
 			}
 		}
 	}
+
+	//위치 생각해봐야함.
 	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
 	server->InputTimerEvent(ev);
 

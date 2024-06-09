@@ -113,7 +113,13 @@ void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 
 	int x = _sessionMgr->objects[id]->_x;
 	int y = _sessionMgr->objects[id]->_y;
-			
+
+	//TODO.지금테스트용은 150인데 나중에 2000으로 바꾸면 W_WIDTH로 바꿔야함
+	if (x >= 150 || x < 0 || y >= 150 || y < 0) {
+		std::cout << "잘못된 접근" << std::endl;
+		return;
+	}
+	
 	if (_mapMgr->IsCanGoCheck(packet->direction, x, y)) {
 	
 		_sessionMgr->objects[id]->_x = x;

@@ -260,10 +260,10 @@ void Server::Worker()
 					break;
 				}
 			}
-		
+
 			if (true == keep_alive) {
 				if (_sessionMgr->objects[static_cast<int>(key)]->_visual == PEACE_FIXED) break;
-				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove==false) break;
+				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove == false) break;
 
 				_sessionMgr->NpcRandomMove(static_cast<int>(key));
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
@@ -304,15 +304,26 @@ void Server::Worker()
 
 			//TODO. max체력 안넘게 수정해야한다.
 			//일단 현재의 hp의 10프로 회복하는거로함 
+
+			//hp가 max일때도 나가야할텐디..?
+			if (_sessionMgr->objects[static_cast<int>(key)]->_state != ST_INGAME )
+			{
+				return;
+			}
+
 			int hp = _sessionMgr->objects[static_cast<int>(key)]->_hp;
 
 			_sessionMgr->objects[static_cast<int>(key)]->_hp += (hp * 0.1);
+
 			TimerEvent ev{ key, chrono::system_clock::now() + 5s, EV_RECOVER_HP, 0 };
 			_timerQueue.push(ev);
+
+
 			delete exOver;
 
 
 		}
+
 	}
 }
 
