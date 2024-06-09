@@ -60,7 +60,7 @@ void NPC::init(int x, int y, int visual)
 	_visual = visual;
 
 	//id가아니라 type을 출력하는거로 일단 하겠다.
-	sprintf_s(_name, "NPC%d", _visual);
+	sprintf_s(_name, "NPC%d", _id);
 
 
 	switch (visual)

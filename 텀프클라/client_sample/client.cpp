@@ -697,8 +697,22 @@ void GameWindow()
 					p.size = sizeof(p);
 					p.type = CS_ATTACK;
 					p.dir = ALL;
+					send_packet(&p);
 
 					//맞은지 아닌지는 서버에서 해보쟈.
+
+					break;
+				}
+				case sf::Keyboard::Q:
+				{
+					CS_ATTACK_PACKET p;
+					p.size = sizeof(p);
+					p.type = CS_ATTACK;
+
+					//사방이 아니면 아바타가 보고있는방향이 공격방향이다
+					p.dir = avatar.direction;
+					send_packet(&p);
+
 
 					break;
 				}

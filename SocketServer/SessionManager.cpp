@@ -22,9 +22,6 @@ SessionManager::SessionManager()
 	}
 
 }
-
-
-
 void SessionManager::Init()
 {
 
@@ -154,10 +151,10 @@ void SessionManager::LoginSession(int id, char* name)
 
 	//섹터에 본인섹터 포함 3x3에 알려줘야한다.
 	unordered_set<int> objs;
-	for (int i = -1; i < 1; ++i) {
+	for (int i = -1; i < 2; ++i) {
 		if (col + i <0 || col + i >SECTOR_NUM) continue;
 
-		for (int j = -1; j < 1; ++j) {
+		for (int j = -1; j < 2; ++j) {
 			if (row + j <0 || row + j >SECTOR_NUM) 	continue;
 			sector[col + i][row + j].SetObjectList(objs);
 
@@ -224,10 +221,10 @@ void SessionManager::LoginSession(int id, int visual)
 
 	//섹터에 본인섹터 포함 3x3에 알려줘야한다.
 	unordered_set<int> objs;
-	for (int i = -1; i < 1; ++i) {
+	for (int i = -1; i < 2; ++i) {
 		if (col + i <0 || col + i >SECTOR_NUM) continue;
 
-		for (int j = -1; j < 1; ++j) {
+		for (int j = -1; j < 2; ++j) {
 			if (row + j <0 || row + j >SECTOR_NUM) 	continue;
 			sector[col + i][row + j].SetObjectList(objs);
 			for (int clientId : objs) {
@@ -286,10 +283,15 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 
 	unordered_set<int> new_viewlist;
 	unordered_set<int> objs;
-	for (int i = -1; i < 1; ++i) {
+	for (int i = -1; i < 2; ++i) {
 		if (curCol + i <0 || curCol + i >SECTOR_NUM) continue;
 
-		for (int j = -1; j < 1; ++j) {
+		for (int j = -1; j < 2; ++j) {
+
+			int temp1 = curCol + i;
+			int temp2 = curRow + j;
+
+
 			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
 			sector[curCol + i][curRow + j].SetObjectList(objs);
 			for (int clientId : objs) {
@@ -444,7 +446,60 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 }
+void SessionManager::AttackSession(int id, char dir)
+{
+	//방향에 따라 범위를 검사해야한다->범위지정은 어케할지도 결정해야함.
+	//세션매니져에 dir보내면 세션매니져에서 dir에 맞게 세션함수 부르기?
+	//그럼 세션에서는 뷰리스트 참고해서 범위안에 있는 오브젝트id있으니까 걔네 공격하기   
+ 
+	//세션매니저에서 할지? 아니면 세션에 따로 만들어놀지?
 
+	//뷰리스트를 복사해오자
+	objects[id]->_vl.lock();
+	unordered_set<int> vlist = objects[id]->_viewList;
+	objects[id]->_vl.unlock();
+
+	//뷰리스트에 존재하는 id가 vlis에 넘어온다.
+	//vlis에 있는애들만 검사하자.
+	//
+
+
+	//여기서 처리해줘야한다
+	for (int npcId : vlist)	{
+		std::cout << npcId << std::endl;
+
+	}
+	std::cout<<std::endl;
+
+	switch (dir)
+	{
+	case LEFT:
+		break;
+	case RIGHT:
+		break;
+	case UP:
+		break;
+	case DOWN:
+		break;
+	case ALL:
+		//사방 a키 눌렀을때임
+		for(int npcId : vlist){
+			if (abs(static_cast<int>(objects[npcId]->_x- objects[id]->_x)) > ATTACK_RANGE) {
+				continue;
+			}
+			if (abs(static_cast<int>(objects[npcId]->_y- objects[id]->_y)) > ATTACK_RANGE) {
+				continue;
+			}
+
+			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
+
+		}
+
+		break;
+	default:
+		break;
+	}
+}
 
 
 

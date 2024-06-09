@@ -4,6 +4,7 @@
 constexpr int VIEW_RANGE = 5;
 constexpr int SECTOR_SIZE = 10;
 constexpr int SECTOR_NUM = W_WIDTH / SECTOR_SIZE;
+constexpr int ATTACK_RANGE = 1;
 
 enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, OP_PLAYER_MOVE };
 enum SessionState { ST_FREE, ST_ALLOC, ST_INGAME };
