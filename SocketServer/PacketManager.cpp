@@ -133,8 +133,6 @@ void PacketManager::ProcessAttackPacket(int id, char* buf, int copySize)
 {
 	CS_ATTACK_PACKET* packet = reinterpret_cast<CS_ATTACK_PACKET*>(buf);
 
-	//1.방향에 따라 가야할듯?
-
 	_sessionMgr->AttackSession(id, packet->dir);
 
 }

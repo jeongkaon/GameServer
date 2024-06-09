@@ -9,6 +9,9 @@ class Session : public Object
 	SOCKET		_socket;
 
 	int		_prevRemain;		//이건 패킷재조립할때 사용한다.
+	
+	int _exp;
+	int _level;
 
 public:
 	Session();
@@ -24,7 +27,8 @@ public:
 	void SendChatPacket(int id, const char* mess);
 	void SendChoiceCharPacket();
 
-
+	void OnAttackSuccess(int type);
+	void OnAttackReceived(int damage);
 
 };
 

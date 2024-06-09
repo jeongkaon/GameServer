@@ -3,9 +3,8 @@
 #include "Server.h"
 #include "LuaFunction.h"
 
-
-
 using namespace std;
+
 Sector SessionManager::sector[SECTOR_NUM][SECTOR_NUM]{};
 
 SessionManager::SessionManager()
@@ -126,10 +125,10 @@ void SessionManager::LoginSession(int id, char* name)
 		objects[id]->_state = ST_INGAME;
 	}
 
+	//이거 오브젝트로 빼자.
 	objects[id]->_x = 5;//rand() % W_WIDTH;
 	objects[id]->_y = 5;//rand() % W_HEIGHT;
 
-	//근데 이렇게 하는게 좋은건지 함수포인터를 쓰는게 좋은건지 고민해봐야한다.
 	objects[id]->SendLoginPacket();
 
 	objects[id]->_sectorCol = objects[id]->_x / SECTOR_SIZE;
@@ -137,6 +136,7 @@ void SessionManager::LoginSession(int id, char* name)
 
 	//비주얼도 추가해야함
 	objects[id]->_visual = 1;
+	
 
 	//섹터에 본인을 추가해야한다.
 	int col = objects[id]->_sectorCol;
@@ -185,6 +185,8 @@ void SessionManager::LoginSession(int id, char* name)
 			}
 		}
 	}
+	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
+	server->InputTimerEvent(ev);
 
 }
 void SessionManager::LoginSession(int id, int visual)
@@ -196,11 +198,14 @@ void SessionManager::LoginSession(int id, int visual)
 		objects[id]->_state = ST_INGAME;
 	}
 
+	//데베 받으면 초기정보 init하는거 object에 한개 만들어서 따로빼자
+	//objects[id]->init()이런식으로 빼자. 
 	objects[id]->_x = 5;//rand() % W_WIDTH;
 	objects[id]->_y = 5;//rand() % W_HEIGHT;
 	objects[id]->_visual = visual;
 
-	//근데 이렇게 하는게 좋은건지 함수포인터를 쓰는게 좋은건지 고민해봐야한다.
+
+
 	objects[id]->SendLoginPacket();
 
 	objects[id]->_sectorCol = objects[id]->_x / SECTOR_SIZE;
@@ -257,8 +262,11 @@ void SessionManager::LoginSession(int id, int visual)
 			}
 		}
 	}
+	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
+	server->InputTimerEvent(ev);
 
 }
+
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 {
 
@@ -285,13 +293,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 	unordered_set<int> objs;
 	for (int i = -1; i < 2; ++i) {
 		if (curCol + i <0 || curCol + i >SECTOR_NUM) continue;
-
 		for (int j = -1; j < 2; ++j) {
-
-			int temp1 = curCol + i;
-			int temp2 = curRow + j;
-
-
 			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
 			sector[curCol + i][curRow + j].SetObjectList(objs);
 			for (int clientId : objs) {
@@ -394,7 +396,7 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 	
-	//TODO. 이동->장애물찾기 어케함? ->방향도 추가해주자
+	//TODO. 이동->장애물찾기 어케함? 
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
 	//섹터검색을해보자
@@ -426,8 +428,6 @@ void SessionManager::NpcRandomMove(int id)
 				objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 		}
 		else {
-
-			//맨마지막 dir 어케할지 정해야함->몬스터도 이동하면 방향있으니까 해줘?
 			objects[pl]->SendMovePacket(objects[id]->_id, 
 				objects[id]->_x, objects[id]->_y, objects[id]->last_move_time,objects[id]->_dir);
 
@@ -448,41 +448,54 @@ void SessionManager::NpcRandomMove(int id)
 }
 void SessionManager::AttackSession(int id, char dir)
 {
-	//방향에 따라 범위를 검사해야한다->범위지정은 어케할지도 결정해야함.
-	//세션매니져에 dir보내면 세션매니져에서 dir에 맞게 세션함수 부르기?
-	//그럼 세션에서는 뷰리스트 참고해서 범위안에 있는 오브젝트id있으니까 걔네 공격하기   
- 
-	//세션매니저에서 할지? 아니면 세션에 따로 만들어놀지?
-
-	//뷰리스트를 복사해오자
 	objects[id]->_vl.lock();
 	unordered_set<int> vlist = objects[id]->_viewList;
 	objects[id]->_vl.unlock();
 
-	//뷰리스트에 존재하는 id가 vlis에 넘어온다.
-	//vlis에 있는애들만 검사하자.
-	//
-
-
-	//여기서 처리해줘야한다
 	for (int npcId : vlist)	{
 		std::cout << npcId << std::endl;
-
 	}
 	std::cout<<std::endl;
 
 	switch (dir)
 	{
 	case LEFT:
-		break;
 	case RIGHT:
+		for (int npcId : vlist) {
+			if (abs(static_cast<int>(objects[npcId]->_x - objects[id]->_x)) > ATTACK_RANGE) {
+				continue;
+			}
+
+			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
+			static_cast<NPC*>(objects[npcId])->_isMove = false;
+
+			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
+			objects[npcId]->OnAttackReceived(objects[id]->_damage);
+
+			//3초뒤에 다시 움직이게 하자.
+			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
+
+			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
+			server->InputTimerEvent(ev);
+		}
 		break;
 	case UP:
-		break;
 	case DOWN:
+		for (int npcId : vlist) {
+			if (abs(static_cast<int>(objects[npcId]->_x - objects[id]->_x)) > ATTACK_RANGE) {
+				continue;
+			}
+			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
+			static_cast<NPC*>(objects[npcId])->_isMove = false;
+			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
+			objects[npcId]->OnAttackReceived(objects[id]->_damage);
+
+			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
+			server->InputTimerEvent(ev);
+
+		}
 		break;
 	case ALL:
-		//사방 a키 눌렀을때임
 		for(int npcId : vlist){
 			if (abs(static_cast<int>(objects[npcId]->_x- objects[id]->_x)) > ATTACK_RANGE) {
 				continue;
@@ -490,8 +503,13 @@ void SessionManager::AttackSession(int id, char dir)
 			if (abs(static_cast<int>(objects[npcId]->_y- objects[id]->_y)) > ATTACK_RANGE) {
 				continue;
 			}
-
 			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
+			static_cast<NPC*>(objects[npcId])->_isMove = false;
+			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
+			objects[npcId]->OnAttackReceived(objects[id]->_damage);
+
+			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
+			server->InputTimerEvent(ev);
 
 		}
 

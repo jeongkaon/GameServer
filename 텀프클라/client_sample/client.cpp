@@ -699,11 +699,13 @@ void GameWindow()
 					p.dir = ALL;
 					send_packet(&p);
 
+					//양방향으로 리소스 띄워야함
+
 					//맞은지 아닌지는 서버에서 해보쟈.
 
 					break;
 				}
-				case sf::Keyboard::Q:
+				case sf::Keyboard::S:
 				{
 					CS_ATTACK_PACKET p;
 					p.size = sizeof(p);

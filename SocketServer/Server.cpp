@@ -138,13 +138,33 @@ void Server::Timer()
 				this_thread::sleep_for(1ms);  // 실행시간이 아직 안되었으므로 잠시 대기
 				continue;
 			}
-			switch (ev.event_id) {
+			switch (ev.event_id) 
+			{
 			case EV_RANDOM_MOVE:
+			{
 				ExpOver* ov = new ExpOver;
 				ov->_comp_type = OP_NPC_MOVE;
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 			}
+			case EV_ACTIVE_MOVE:
+			{
+				ExpOver* ov = new ExpOver;
+				ov->_comp_type = OP_NPC_MOVE_ACTIVE;
+				PostQueuedCompletionStatus(_iocp, 2, ev.obj_id, &ov->_over);
+				break;
+
+			}
+			case EV_RECOVER_HP:
+			{
+				ExpOver* ov = new ExpOver;
+				ov->_comp_type = OP_RECOVER_HP;
+				PostQueuedCompletionStatus(_iocp, 3, ev.obj_id, &ov->_over);
+				break;
+
+			}
+			}
+		
 			continue;		// 즉시 다음 작업 꺼내기
 		}
 		this_thread::sleep_for(1ms);   // timer_queue가 비어 있으니 잠시 기다렸다가 다시 시작
@@ -243,6 +263,7 @@ void Server::Worker()
 		
 			if (true == keep_alive) {
 				if (_sessionMgr->objects[static_cast<int>(key)]->_visual == PEACE_FIXED) break;
+				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove==false) break;
 
 				_sessionMgr->NpcRandomMove(static_cast<int>(key));
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
@@ -269,6 +290,27 @@ void Server::Worker()
 			delete exOver;
 			break;
 		}
+		case OP_NPC_MOVE_ACTIVE: {
+			std::cout << key << "NPC 다시 움직임 활성화됨\n";
+			static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove = true;
+			TimerEvent ev{ key, chrono::system_clock::now() + 3s, EV_RANDOM_MOVE, 0 };
+			_timerQueue.push(ev);
+
+			delete exOver;
+			break;
+		}
+		case OP_RECOVER_HP:
+			std::cout << key << "PLAYER의 체력 10%회복되는 타이머발동~\n";
+
+			//TODO. max체력 안넘게 수정해야한다.
+			//일단 현재의 hp의 10프로 회복하는거로함 
+			int hp = _sessionMgr->objects[static_cast<int>(key)]->_hp;
+
+			_sessionMgr->objects[static_cast<int>(key)]->_hp += (hp * 0.1);
+			TimerEvent ev{ key, chrono::system_clock::now() + 5s, EV_RECOVER_HP, 0 };
+			_timerQueue.push(ev);
+			delete exOver;
+
 
 		}
 	}
@@ -305,4 +347,15 @@ void Server::WakeupNpc(int npc, int player)
 	_timerQueue.push(ev);
 
 }
+
+void Server::InputTimerEvent(TimerEvent* ev)
+{
+	_timerQueue.push(*ev);
+
+	//되나ㅣ?
+	delete ev;
+
+}
+
+
 

@@ -59,4 +59,5 @@ public:
     int LuaGetY(int id); 
 
     void WakeupNpc(int npc, int player);
+    void InputTimerEvent(TimerEvent* ev);
 };

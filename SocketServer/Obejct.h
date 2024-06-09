@@ -20,7 +20,8 @@ public:
 	short _x, _y;
 	int _visual;
 	int _hp;
-	
+	int _maxHp;
+	int _damage;
 
 	char _dir;
 
@@ -33,5 +34,10 @@ public:
 	virtual void SendMovePacket(int, int ,int ,int, char) {}
 
 	virtual void SendRemovePlayerPacket(int){}
+
+
+	//공격관련
+	virtual void OnAttackSuccess(int type){}
+	virtual void OnAttackReceived(int damage){}
 };
 

@@ -6,12 +6,29 @@ constexpr int SECTOR_SIZE = 10;
 constexpr int SECTOR_NUM = W_WIDTH / SECTOR_SIZE;
 constexpr int ATTACK_RANGE = 1;
 
-enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, OP_PLAYER_MOVE };
+enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, 
+	OP_PLAYER_MOVE, OP_NPC_MOVE_ACTIVE,OP_RECOVER_HP,
+};
 enum SessionState { ST_FREE, ST_ALLOC, ST_INGAME };
 
 enum MapInfo{ POSSIBLE, IMPOSSIBLE};
 
-enum EventType { EV_RANDOM_MOVE };
+enum EventType { EV_RANDOM_MOVE ,EV_ACTIVE_MOVE, EV_RECOVER_HP};
+
+//레벨요구 경험치
+enum LevelRequired {
+	LEVEL2 = 1,
+	LEVEL3 = 2,
+	LEVEL4 = 4,
+	LEVEL5 = 8
+};
+enum MaxHp {
+	MAX_HP1 = 100,
+	MAX_HP2 = 200,
+	MAX_HP3 = 300,
+	MAX_HP4 = 400,
+	MAX_HP5 = 500
+};
 
 struct GameData {
 	char user_name[NAME_SIZE];

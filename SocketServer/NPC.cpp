@@ -50,14 +50,16 @@ void NPC::init(int x, int y, int visual)
 {
 
 	_id = MAX_USER + TotalNpcCount++;
-
-
-
+	
 	_state = ST_INGAME;
+	//NPC는 일단 10이로 하기
+	//타입별로 달라야하나??
+	_damage = 10;
 
 	_x = x;
 	_y = y;
 	_visual = visual;
+	_hp = 100;
 
 	//id가아니라 type을 출력하는거로 일단 하겠다.
 	sprintf_s(_name, "NPC%d", _id);
@@ -66,12 +68,17 @@ void NPC::init(int x, int y, int visual)
 	switch (visual)
 	{
 	case PEACE_FIXED:
+		_isMove = false;
 		break;
 	case PEACE_ROAMING:
+		_isMove = true;
 		break;
 	case AGRO_FIXED:
+		_isMove = false;
+
 		break;
 	case AGRO_ROAMING:
+		_isMove = true;
 		break;
 
 	default:
@@ -149,6 +156,36 @@ void NPC::DoRandomMove()
 		SessionManager::sector[curCol][curRow].InsertObjectInSector(_id);
 
 	}
+
+}
+
+void NPC::OnAttackSuccess(int type)
+{
+	//얘는 type필요없긴한데 걍 일단 넣음
+}
+
+void NPC::OnAttackReceived(int damage)
+{
+
+	//일단 10을 줄이자.
+	std::cout << _id << "의 npc가 공격을 당해서 " << _hp << "에서 ";
+
+	_hp -= damage;
+	std::cout << _hp << "가 되었다" << std::endl;
+
+	//hp0되면 시간 저장해아한다. 30초뒤에 부활해야함.
+	if (_hp <= 0) {
+		dieTime = std::chrono::system_clock::now();
+		std::cout << _id <<" 몬스터는 죽었다." << std::endl;
+
+		//30초 후에 살아나야한다.
+		//죽으면 true를 리턴할까?
+		
+	//타이머 가동해야하나???
+	}
+
+	
+
 
 }
 
