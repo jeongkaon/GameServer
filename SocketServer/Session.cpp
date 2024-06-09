@@ -160,6 +160,8 @@ void Session::OnAttackSuccess(int visual)
 	case LEVEL2:
 		std::cout << "LEVEL2 업그레이드\n";
 		_level = 2;
+		//maxhp값도 올려줘야한다.
+		//_maxHp
 		break;
 	case LEVEL3:
 		std::cout << "LEVEL3 업그레이드\n";

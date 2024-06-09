@@ -251,9 +251,11 @@ void ProcessPacket(char* ptr)
 		SC_MOVE_OBJECT_PACKET* my_packet = reinterpret_cast<SC_MOVE_OBJECT_PACKET*>(ptr);
 		int other_id = my_packet->id;
 		if (other_id == g_myid) {
-			avatar.move(my_packet->x, my_packet->y);
 			viewX = my_packet->x * TILE_WIDTH;
 			viewY = my_packet->y * TILE_WIDTH;
+			view.setCenter(viewX, viewY);
+			g_window->setView(view);
+			avatar.move(my_packet->x, my_packet->y);
 
 
 		}
