@@ -24,6 +24,8 @@ constexpr auto SPRITE_HEIGHT = 384 / 4;
 constexpr auto SPRITE_MON_HEIGHT = 256/4;
 
 
+const float speed = 64.0f;
+
 bool isLoginWindow1Closed = false;
 bool isSelectWindow1Closed = false;
 bool isGameWindow1Closed = false;
@@ -119,7 +121,6 @@ public:
 		//리팩토링할때 프레임단위로 바꾸게하자
 		m_x = x;
 		m_y = y;
-		float deltaTime = g_clock.restart().asSeconds();
 
 	
 		static unsigned int count = 1;
@@ -231,8 +232,6 @@ void ProcessPacket(char* ptr)
 
 		}
 		else if(id > 0 ){
-			//몬스터임
-			//TODO.서버에서 visual값이 이상하게 들어감 나중에 수정해야함->자료형문제였음
 			int visual = my_packet->visual;
 			players[id] = OBJECT{ *MushRoom, 0, 0, 64 *3, 64*3,visual };
 			players[id].spriteWidth = SPRITE_WIDTH;
@@ -640,9 +639,9 @@ void GameWindow()
 			if (event.type == sf::Event::Closed)
 				g_window->close();
 			if (event.type == sf::Event::KeyPressed) {
+				float deltaTime = g_clock.restart().asSeconds();
+
 				switch (event.key.code) {
-
-
 				case sf::Keyboard::Left: 
 				{
 					avatar.direction = LEFT;
@@ -660,6 +659,7 @@ void GameWindow()
 					CS_MOVE_PACKET p;
 					p.size = sizeof(p);
 					p.type = CS_MOVE; p.direction = avatar.direction;
+					
 					send_packet(&p);
 
 				}

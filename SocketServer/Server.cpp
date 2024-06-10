@@ -300,13 +300,14 @@ void Server::Worker()
 			break;
 		}
 		case OP_RECOVER_HP:
+		{
 			std::cout << key << "PLAYER의 체력 10%회복되는 타이머발동~\n";
 
 			//TODO. max체력 안넘게 수정해야한다.
 			//일단 현재의 hp의 10프로 회복하는거로함 
 
 			//hp가 max일때도 나가야할텐디..?
-			if (_sessionMgr->objects[static_cast<int>(key)]->_state != ST_INGAME )
+			if (_sessionMgr->objects[static_cast<int>(key)]->_state != ST_INGAME)
 			{
 				return;
 			}
@@ -320,8 +321,15 @@ void Server::Worker()
 
 
 			delete exOver;
+			break;
+		}
+		case OP_NPC_RESPAWN:
+		{
+			//NPC죽었으면 다시 부활하는거임.
+			delete exOver;
+			break;
 
-
+		}
 		}
 
 	}
