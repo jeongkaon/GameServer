@@ -12,6 +12,9 @@
 #include <windows.h>  
 #include <fstream>
 #include <concurrent_priority_queue.h>
+#include <queue>
+#include <map>
+
 
 
 #include "include/lua.hpp"

@@ -202,19 +202,16 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 	objects[id]->SendMovePacket(dir);
 
 	for (int clientId : new_viewlist) {
-		//플레이어면
 		if (clientId < MAX_USER) {
 			objects[clientId]->_vl.lock();
 			if (objects[clientId]->_viewList.count(id)) {
 				objects[clientId]->_vl.unlock();
 				objects[clientId]->SendMovePacket(id, x, y, objects[id]->last_move_time,dir);
-
 			}
 			else {
 				objects[clientId]->_vl.unlock();
 				objects[clientId]->SendAddPlayerPacket(id, objects[id]->_name, 
 					objects[id]->_x, objects[id]->_y, objects[id]->_visual);
-					
 			}
 		}
 		else {
@@ -224,9 +221,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 		if (old_vlist.count(clientId) == 0) {
 			objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
 				objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
-
 		}
-
 	}
 
 
@@ -290,6 +285,7 @@ void SessionManager::NpcRandomMove(int id)
 	}
 	
 	//TODO. 이동->장애물찾기 어케함? 
+	//지금은 걍 랜덤이동임.
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
 	Col = objects[id]->_sectorCol;
@@ -312,7 +308,6 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 
-	//모두에게 알려야한다.
 
 	for (auto pl : new_viewlist) {
 		if (0 == old_vl.count(pl)) {
@@ -514,7 +509,6 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 		break;
 	}
 }
-
 void SessionManager::RespawnNPC(int npcId)
 {
 	unordered_set<int> _viewlist;

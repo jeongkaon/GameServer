@@ -16,6 +16,9 @@
     <Filter Include="소스 파일\DataBase">
       <UniqueIdentifier>{163ee0d7-9995-4fab-844b-22e1d7e68c85}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Path">
+      <UniqueIdentifier>{99850dd2-5f3d-486e-9b64-dd0a14e7b6e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -56,6 +59,9 @@
     </ClCompile>
     <ClCompile Include="LuaFunction.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AStar.cpp">
+      <Filter>소스 파일\Path</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -103,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="LuaFunction.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AStar.h">
+      <Filter>소스 파일\Path</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

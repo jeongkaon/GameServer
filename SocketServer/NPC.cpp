@@ -20,31 +20,6 @@ NPC::NPC(int x, int y)
 }
 
 
-void NPC::init()
-{
-	//TODO.초기위치도 바꿔야함. -> 생성자에 있는거 옮겨오자!
-	_state = ST_INGAME;
-	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
-
-	sprintf_s(_name, "NPC%d", _id);
-
-	_L = luaL_newstate();
-
-
-	luaL_openlibs(_L);
-	luaL_loadfile(_L, "npc.lua");
-	lua_pcall(_L, 0, 0, 0);
-
-	lua_getglobal(_L, "set_uid");
-	lua_pushnumber(_L, _id);
-	lua_pcall(_L, 1, 0, 0);
-
-	lua_register(_L, "API_SendMessage", API_SendMessage);
-	lua_register(_L, "API_get_x", API_get_x);
-	lua_register(_L, "API_get_y", API_get_y);
-
-
-}
 
 void NPC::init(int x, int y, int visual)
 {
@@ -58,6 +33,9 @@ void NPC::init(int x, int y, int visual)
 
 	_x = x;
 	_y = y;
+	_rangeX = x + 20;
+	_rangeY = y + 20;
+
 	_visual = visual;
 	_hp = 100;
 
@@ -184,6 +162,35 @@ bool NPC::OnAttackReceived(int damage)
 	return false;
 	
 
+
+}
+
+void NPC::AStar()
+{
+	//int startX = _x;
+	//int startY = _y;
+
+	//int destX = _x + _rangeX;
+	//int destY = _y + _rangeY;
+
+	////흠 대각선빼버릴까? 일단 빼고 4방향으로
+
+	//vector<vector<bool>> closed(_rangeY, vector<bool>(_rangeX, false));
+	////int maxNum = std::numeric_limits<int>::max();
+
+	//vector<vector<int>> best(_rangeY, vector<int>(_rangeX, INT32_MAX));
+
+	//map<pair<int, int>, pair<int, int>> parent;
+	//priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pq;
+
+	////초기값
+	//{
+	//	int g = 0;
+	//	int h = 10 * (abs(destY - startY) + abs(destX - startX));
+	//	pq.push(PQNode{ g + h, g, startX,startY });
+	//	best[startY][startX] = g + h;
+	//	parent[make_pair(startY,startX)] = make_pair(startY, startX);
+	//}
 
 }
 

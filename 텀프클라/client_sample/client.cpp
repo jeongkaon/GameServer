@@ -166,7 +166,13 @@ public:
 		float rx = (m_x) * 65.0f + 1;
 		float ry = (m_y) * 65.0f + 1;
 
-		m_sprite.setPosition(rx, ry-32);
+		if (visual <= 10) {
+			m_sprite.setPosition(rx, ry - 32);
+		}
+		else {
+			m_sprite.setPosition(rx, ry );
+
+		}
 
 		g_window->draw(m_sprite);
 		auto size = m_name.getGlobalBounds();
