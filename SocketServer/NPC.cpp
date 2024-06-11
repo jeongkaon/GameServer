@@ -176,6 +176,9 @@ bool NPC::OnAttackReceived(int damage)
 
 	if (_hp <= 0) {
 		std::cout << _id <<" 몬스터는 죽었다." << std::endl;
+		
+		SessionManager::sector[_sectorCol][_sectorRow].EraseObjectInSector(_id);
+
 		return true;
 	}
 	return false;

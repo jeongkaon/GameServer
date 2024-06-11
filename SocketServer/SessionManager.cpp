@@ -24,7 +24,6 @@ SessionManager::SessionManager()
 void SessionManager::Init()
 {
 
-	//NPC init하는부분
 	ifstream in{ "npc.txt",ios::binary };
 
 	int temp;
@@ -32,9 +31,6 @@ void SessionManager::Init()
 	int i = 0;
 	int j = 0;
 
-
-
-///temp에 -가 들어가는디??? 이상한디??
 	while (in >> temp) {
 		_npcInfo[i][j] = temp;
 		++j;
@@ -96,14 +92,6 @@ int SessionManager::RetNewClientId()
 	return -1;
 }
 
-void SessionManager::SetUserGameData(int id, GameData& data)
-{
-	//TODO.로그인할때 이함수 고쳐야함!
-	if (id > MAX_USER) return;
-	
-	strcpy_s(objects[id]->_name, data.user_name);
-
-}
 
 //로그인요청 들어온거 체크해야한다.
 int SessionManager::CheckLoginSession(int id)
@@ -120,10 +108,8 @@ void SessionManager::LoginSession(int id)
 		objects[id]->_state = ST_INGAME;
 	}
 
-	//나한테 로그인 패킷을 보낸다.
 	objects[id]->SendLoginPacket();
 
-	//섹터초기화
 	int col = objects[id]->_sectorCol;
 	int row = objects[id]->_sectorRow;
 
@@ -150,14 +136,12 @@ void SessionManager::LoginSession(int id)
 				if (objects[clientId]->_id == id) continue;
 				if (false == CanSee(id, objects[clientId]->_id)) continue;
 
-				//플레이어일때
 				if (clientId < MAX_USER) {
 					objects[clientId]->SendAddPlayerPacket(
 						id, objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 				}
 				else {
-					//npc일때
-					//Wakeup해줘야함
+					
 					server->WakeupNpc(clientId, id);
 
 				}
@@ -234,7 +218,6 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 			}
 		}
 		else {
-			//깨운다
 			server->WakeupNpc(objects[clientId]->_id, id);
 		}
 
@@ -309,7 +292,6 @@ void SessionManager::NpcRandomMove(int id)
 	//TODO. 이동->장애물찾기 어케함? 
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
-	//섹터검색을해보자
 	Col = objects[id]->_sectorCol;
 	Row = objects[id]->_sectorRow;
 
@@ -356,7 +338,7 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 }
-void SessionManager::AttackSession(int id, char dir)
+void SessionManager::AttackSessionToNPC(int id, char dir)
 {
 	objects[id]->_vl.lock();
 	unordered_set<int> vlist = objects[id]->_viewList;
@@ -380,7 +362,13 @@ void SessionManager::AttackSession(int id, char dir)
 			static_cast<NPC*>(objects[npcId])->_isMove = false;
 
 			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
+
+			//죽었으면 true를 반환한다. 
 			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+
+				//NPC는 뷰리스트 따로 관리안함. 
+				//근처에 있는 애들한테 REMOVE알려줘야한다.
+
 				//죽으면 true반환한다.->일단 테스트로 10초후 ㅂ활로 설정함
 				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 10s, EV_NPC_DIE, 0 };
 				server->InputTimerEvent(dieev);
@@ -404,7 +392,19 @@ void SessionManager::AttackSession(int id, char dir)
 			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
 			static_cast<NPC*>(objects[npcId])->_isMove = false;
 			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
-			objects[npcId]->OnAttackReceived(objects[id]->_damage);
+			//죽었으면 true를 반환한다. 
+			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+
+
+
+				//뷰리스트에서 지워준다.
+
+				//죽으면 true반환한다.->일단 테스트로 10초후 ㅂ활로 설정함
+				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 10s, EV_NPC_DIE, 0 };
+				server->InputTimerEvent(dieev);
+
+			}
+			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
 
 			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
 			server->InputTimerEvent(ev);
@@ -422,7 +422,51 @@ void SessionManager::AttackSession(int id, char dir)
 			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
 			static_cast<NPC*>(objects[npcId])->_isMove = false;
 			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
-			objects[npcId]->OnAttackReceived(objects[id]->_damage);
+			//죽었으면 true를 반환한다. 
+			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+
+				//뷰리스트세팅한다.
+				unordered_set<int> _viewlist;
+				std::unordered_set<int> objs;
+
+				int Col = objects[npcId]->_sectorCol;
+				int Row = objects[npcId]->_sectorRow;
+
+				for (int i = -1; i < 1; ++i) {
+					if (Col + i <0 || Col + i >SECTOR_NUM) continue;
+
+					for (int j = -1; j < 1; ++j) {
+						if (Row + j <0 || Row + j >SECTOR_NUM) continue;
+						sector[Col + i][Row + j].SetObjectList(objs);
+
+						for (int clientId : objs) {
+							if (objects[clientId]->_state != ST_INGAME) continue;
+							if (objects[clientId]->_id == id) continue;
+							if (objects[clientId]->_id >MAX_USER) continue;
+
+							if (false == CanSee(id, objects[clientId]->_id)) continue;
+							_viewlist.insert(objects[clientId]->_id);
+						}
+					}
+				}
+
+				//이제 리무브를 보내준다.
+				for (int ClidntId : _viewlist) {
+					objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
+				}
+
+				/*SessionManager::sector[_sectorCol][_sectorRow].EraseObjectInSector(_id);*/
+
+
+			
+
+				//죽으면 true반환한다.->일단 테스트로 10초후 ㅂ활로 설정함
+				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 10s, EV_NPC_DIE, 0 };
+				server->InputTimerEvent(dieev);
+
+			}
+
+			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
 
 			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
 			server->InputTimerEvent(ev);

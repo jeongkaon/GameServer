@@ -133,7 +133,7 @@ void PacketManager::ProcessAttackPacket(int id, char* buf, int copySize)
 {
 	CS_ATTACK_PACKET* packet = reinterpret_cast<CS_ATTACK_PACKET*>(buf);
 
-	_sessionMgr->AttackSession(id, packet->dir);
+	_sessionMgr->AttackSessionToNPC(id, packet->dir);
 
 }
 

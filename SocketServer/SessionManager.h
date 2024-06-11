@@ -30,9 +30,7 @@ public:
 	int RetNewClientId();
 
 	bool CanSee(int from, int to);
-
 	
-	void SetUserGameData(int id, GameData& data);
 
 	int CheckLoginSession(int id);		//TODO. 기존에접속중인지 확인해야함
 	//GameData인자로 받아서 그거로 로긴하는거임
@@ -47,6 +45,6 @@ public:
 	void NpcRandomMove(int id);
 
 	//공격관련
-	void AttackSession(int id, char dir);
+	void AttackSessionToNPC(int id, char dir);
 
 };

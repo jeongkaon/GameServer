@@ -336,6 +336,10 @@ void Server::Worker()
 		{
 			//NPC죽었으면 다시 부활하는거임.
 			//부활하는거 코드 써야하낟. 타이머까지는 넣음
+			
+			//섹터에 추가해주고
+			//애둘한테 알려줘야한다.
+
 			std::cout << key << "번째 NPC 부활" << std::endl;
 			delete exOver;
 			break;
