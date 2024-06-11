@@ -339,6 +339,7 @@ void Server::Worker()
 			
 			//섹터에 추가해주고
 			//애둘한테 알려줘야한다.
+			_sessionMgr->RespawnNPC(key);
 
 			std::cout << key << "번째 NPC 부활" << std::endl;
 			delete exOver;

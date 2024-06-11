@@ -46,5 +46,6 @@ public:
 
 	//공격관련
 	void AttackSessionToNPC(int id, char dir);
+	void RespawnNPC(int npcId);
 
 };
