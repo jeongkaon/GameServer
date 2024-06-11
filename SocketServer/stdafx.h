@@ -3,6 +3,7 @@
 #include <WS2tcpip.h>
 #include <MSWSock.h>
 #include <mutex>
+#include <bitset>
 #include <unordered_set>
 #include <unordered_map>
 #include <array>

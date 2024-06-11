@@ -24,7 +24,7 @@ NPC::NPC(int x, int y)
 
 void NPC::init(int x, int y, int visual)
 {
-	astar.init(x, y, 20);
+	//astar.init(x, y, 20); 일단막음
 	_id = MAX_USER + TotalNpcCount++;
 	
 	_state = ST_INGAME;

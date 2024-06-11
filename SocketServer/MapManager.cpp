@@ -20,7 +20,7 @@ void MapManager::InitMapInfo()
 	int i = 0;
 	int j = 0;
 
-	//못가는곳이 false, 갈수있는곳이 true
+	//못가는곳이 0, 갈수있는곳이 1
 	while (in >> temp) {
 		_moveInfo[i][j] = !temp;
 		++j;

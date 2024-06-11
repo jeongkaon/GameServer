@@ -19,7 +19,7 @@ public:
 	
 	bool _isMove;
 	std::vector<std::pair<int, int>> path;
-	AStar astar;
+	//AStar astar;
 
 
 

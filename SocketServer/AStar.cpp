@@ -66,6 +66,8 @@ void AStar::init(int x, int y, int searchRange)
 	int g = 0;
 	int h = 10 * (abs(destY - startY) + abs(destX - startX));
 	pq.push(PQNode{ g + h, g, startX,startY });
+
+	//여기가 문제였음.
 	best[startY][startX] = g + h;
 	parent[{x, y}] = { x,y };
 
