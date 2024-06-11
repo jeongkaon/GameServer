@@ -24,6 +24,26 @@ Session::Session()
 	_maxHp = 100;
 }
 
+void Session::init(void* p)
+{
+	GameData* data = (GameData*)p;
+	
+	strcpy_s(_name, data->user_name);
+
+	_x = data->user_x;
+	_y = data->user_y;
+	_exp = data->user_exp;
+	_hp = data->user_hp;
+	_level = data->user_level;
+	_visual = data->user_visual;
+	
+	_sectorCol = _x / SECTOR_SIZE;
+	_sectorRow = _y / SECTOR_SIZE;
+
+
+
+}
+
 void Session::DoRecv()
 {
 	DWORD recv_flag = 0;
@@ -184,7 +204,7 @@ void Session::OnAttackSuccess(int visual)
 
 }
 
-void Session::OnAttackReceived(int damage)
+bool Session::OnAttackReceived(int damage)
 {
 	//hp 줄여야한다.
 	
@@ -201,7 +221,11 @@ void Session::OnAttackReceived(int damage)
 		//TODO.레벨마다 max_hp다르게 해야하는데 그거 저장하고 바꿔줘야한다.
 		_hp = 50;
 
+
+		return true;
 	}
+
+	return false;
 
 }
 

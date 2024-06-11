@@ -28,6 +28,9 @@ public:
 public:
 	Object();
 
+	virtual void init(void* ){}
+
+	
 	virtual void SendLoginPacket(){}
 	virtual void SendAddPlayerPacket(int , char* ,int,int , int){}
 	virtual void SendMovePacket(char dir){}
@@ -38,6 +41,6 @@ public:
 
 	//공격관련
 	virtual void OnAttackSuccess(int type){}
-	virtual void OnAttackReceived(int damage){}
+	virtual bool OnAttackReceived(int damage) { return false; }
 };
 

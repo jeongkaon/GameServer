@@ -28,7 +28,7 @@ public:
 	void DoRandomMove();
 
 	void OnAttackSuccess(int visual);
-	void OnAttackReceived(int damage);
+	bool OnAttackReceived(int damage);
 
 };
 

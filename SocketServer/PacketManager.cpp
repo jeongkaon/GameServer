@@ -62,34 +62,30 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 {
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 	
-	GameData userData{};
 	
-	int res = CheckUserInDB(p->name, userData);
-
-	//받은 userData를 기반으로 session정보들 업데이트
-	//TODO. 로긴로직 더 생각해봐야함
+	GameData userData{ *p->name,1,0,100,INIT_X_POS,INIT_Y_POS,0 };
+	
+	int res = CheckUserInDB(p->name, &userData);
+	_sessionMgr->objects[id]->init(&userData);
 
 	switch (res)
 	{
 	case NONE:
-		//TODO.db에서 받은 자료 토대로 로긴하는거로 변경
-		_sessionMgr->LoginSession(id, userData.user_name);
+		_sessionMgr->LoginSession(id);
 		break;
 	case NOT_EXIST_IN_DB:
-		//DB에 없으니까 새롭게 생성
 		AddUSerInDB(p->name);
-
+		_sessionMgr->CharChoiceSession(id);
 		break;
 	case NOT_CHOICE_CHARACTER:
+		
 		_sessionMgr->CharChoiceSession(id);
-
-
 		break;
 	default:
 		break;
 	}
 
-
+	std::cout << std::endl;
 
 }
 
@@ -97,13 +93,11 @@ void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySiz
 {
 	CS_CHOICECHAR_PACKET* p = reinterpret_cast<CS_CHOICECHAR_PACKET*>(buf);
 	
-	//캐릭터 정보 저장해야한다. 그리고 로긴 패킷으로 해야함
-	//이름도 념겨야하는디...흠냐
-	//->해당 id에 이미 d
-	_sessionMgr->LoginSession(id, p->visual);
+	_sessionMgr->objects[id]->_visual = p->visual;
+	_sessionMgr->LoginSession(id);
 
-
-
+	//DB에 등록해야한다.
+	AddVisualInfoInDB(_sessionMgr->objects[id]->_name, p->visual);
 }
 
 void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
@@ -151,34 +145,31 @@ void PacketManager::ProcessLogoutPacket(int id, char* buf, int copySize)
 {
 }
 
-int PacketManager::CheckUserInDB(const char* name,GameData& data)
+int PacketManager::CheckUserInDB(const char* name,GameData* data)
 {
-	//name 실제 있는지 확인하는 함수
 	DBConnection* dbConn = _dbConnPool->Pop();
 	dbConn->Unbind();
 
 	SQLLEN outLen = 0;
 
-	dbConn->BindCol(1, data.user_name, NAME_SIZE, &outLen);
-	dbConn->BindCol(2, &data.user_level, &outLen);
-	dbConn->BindCol(3, &data.user_exp, &outLen);
-	dbConn->BindCol(4, &data.user_hp, &outLen);
-	dbConn->BindCol(5, &data.user_x, &outLen);
-	dbConn->BindCol(6, &data.user_y, &outLen);
-	dbConn->BindCol(7, &data.user_visual, &outLen);
+	dbConn->BindCol(1, data->user_name, NAME_SIZE, &outLen);
+	dbConn->BindCol(2, &data->user_level, &outLen);
+	dbConn->BindCol(3, &data->user_exp, &outLen);
+	dbConn->BindCol(4, &data->user_hp, &outLen);
+	dbConn->BindCol(5, &data->user_x, &outLen);
+	dbConn->BindCol(6, &data->user_y, &outLen);
+	dbConn->BindCol(7, &data->user_visual, &outLen);
 
 	SQLWCHAR query[1024];
 	wsprintf(query, L"SELECT * FROM game_server.dbo.game_data_table WHERE user_name = '%s'", ConvertToWideChar(name));
 	dbConn->Excute(query);
-
 
 	if (dbConn->Fetch()==false) {
 		_dbConnPool->Push(dbConn);
 		return NOT_EXIST_IN_DB;
 	}
 
-
-	if (data.user_visual == 0) {
+	if (data->user_visual == 0) {
 		_dbConnPool->Push(dbConn);
 		return NOT_CHOICE_CHARACTER;
 	}
@@ -198,9 +189,7 @@ bool PacketManager::AddUSerInDB(const char* name)
 
 	wsprintf(query, 
 		L"INSERT INTO game_server.dbo.game_data_table (user_name, user_level, user_exp, user_hp, user_x, user_y,user_visual)  \
-		VALUES (\'%s\', %d, %d, %d, %d, %d, %d)", ConvertToWideChar(name),0,0,100,0,0,0);
-
-	
+		VALUES (\'%s\', %d, %d, %d, %d, %d, %d)", ConvertToWideChar(name),1,0,100, INIT_X_POS, INIT_Y_POS,0);
 
 	dbConn->Excute(query);
 
@@ -208,6 +197,27 @@ bool PacketManager::AddUSerInDB(const char* name)
 	return true;
 
 
+}
+
+bool PacketManager::AddVisualInfoInDB(const char* name, int visual)
+{
+
+	DBConnection* dbConn = _dbConnPool->Pop();
+	dbConn->Unbind();
+
+	SQLLEN len = 0;
+	dbConn->BindParam(1, name, &len);
+	dbConn->BindParam(7, &visual, &len);
+
+	SQLWCHAR query[1024];
+	wsprintf(query,
+		L"UPDATE game_server.dbo.game_data_table SET user_visual = %s WHERE user_name = %d", name, visual);
+
+
+	dbConn->Excute(query);
+
+	_dbConnPool->Push(dbConn);
+	return true;
 }
 
 

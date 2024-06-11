@@ -5,6 +5,9 @@ constexpr int VIEW_RANGE = 5;
 constexpr int SECTOR_SIZE = 10;
 constexpr int SECTOR_NUM = W_WIDTH / SECTOR_SIZE;
 constexpr int ATTACK_RANGE = 1;
+constexpr int INIT_X_POS = 3;
+constexpr int INIT_Y_POS = 1;
+
 
 enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, 
 	OP_PLAYER_MOVE, OP_NPC_MOVE_ACTIVE,OP_RECOVER_HP, OP_NPC_RESPAWN,
@@ -13,7 +16,7 @@ enum SessionState { ST_FREE, ST_ALLOC, ST_INGAME };
 
 enum MapInfo{ POSSIBLE, IMPOSSIBLE};
 
-enum EventType { EV_RANDOM_MOVE ,EV_ACTIVE_MOVE, EV_RECOVER_HP};
+enum EventType { EV_RANDOM_MOVE ,EV_ACTIVE_MOVE, EV_RECOVER_HP, EV_NPC_DIE};
 
 //레벨요구 경험치
 enum LevelRequired {

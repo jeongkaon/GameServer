@@ -16,6 +16,8 @@ class Session : public Object
 public:
 	Session();
 
+	void init(void* p);
+
 	void DoRecv();
 	void DoSend(void* packet);
 
@@ -28,7 +30,7 @@ public:
 	void SendChoiceCharPacket();
 
 	void OnAttackSuccess(int type);
-	void OnAttackReceived(int damage);
+	bool OnAttackReceived(int damage);
 
 };
 

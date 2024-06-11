@@ -196,8 +196,6 @@ void ProcessPacket(char* ptr)
 	{
 	case SC_LOGIN_INFO:
 	{
-		isLoginWindow1Closed = true;
-		isSelectWindow1Closed = true;
 
 		SC_LOGIN_INFO_PACKET * packet = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(ptr);
 		g_myid = packet->id;
@@ -205,8 +203,20 @@ void ProcessPacket(char* ptr)
 		avatar.m_x = packet->x;
 		avatar.m_y = packet->y;
 		avatar.visual = packet->visual;
-		
+		viewX = packet->x * TILE_WIDTH;
+		viewY = packet->y * TILE_WIDTH;
+		avatar.direction = DOWN;
 		avatar.show();
+
+		isLoginWindow1Closed = true;
+		isSelectWindow1Closed = true;
+
+	//	view.setCenter(viewX, viewY);
+	//	g_window->setView(view);
+		avatar.move(packet->x, packet->y);
+
+
+
 
 	}
 	break;
@@ -625,21 +635,21 @@ void GameWindow()
 	g_window = &window;
 
 	avatar = OBJECT{ *Visuals[avatar.visual - 1], 0,0, 64 * 4, 384,avatar.visual };
-
+	avatar.a_draw();
 
 	//뷰설정
 	view = g_window->getDefaultView();
 	while (g_window->isOpen())
 	{
-
+	
 		sf::Event event;
 		while (g_window->pollEvent(event))
 		{
 
+
 			if (event.type == sf::Event::Closed)
 				g_window->close();
 			if (event.type == sf::Event::KeyPressed) {
-				float deltaTime = g_clock.restart().asSeconds();
 
 				switch (event.key.code) {
 				case sf::Keyboard::Left: 

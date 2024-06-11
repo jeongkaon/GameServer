@@ -113,32 +113,17 @@ int SessionManager::CheckLoginSession(int id)
 	return LOGIN_OK;
 }
 
-//로긴인포 보내기 위한 함수임
-//->밑에 두함수도 합쳐야함->데이터베이스에서 불러온거 기반으로 세팅하는거로
-void SessionManager::LoginSession(int id, char* name)
+void SessionManager::LoginSession(int id)
 {
-	//DB에서 읽어온 구조체를 인자로 받아서 데이터 세팅해야할듯
-
-	strcpy_s(objects[id]->_name, name);
 	{
 		lock_guard<mutex> ll{ objects[id]->_sLock };
 		objects[id]->_state = ST_INGAME;
 	}
 
-	//이거 오브젝트로 빼자.
-	objects[id]->_x = 5;//rand() % W_WIDTH;
-	objects[id]->_y = 5;//rand() % W_HEIGHT;
-
+	//나한테 로그인 패킷을 보낸다.
 	objects[id]->SendLoginPacket();
 
-	objects[id]->_sectorCol = objects[id]->_x / SECTOR_SIZE;
-	objects[id]->_sectorRow = objects[id]->_y / SECTOR_SIZE;
-
-	//비주얼도 추가해야함
-	objects[id]->_visual = 1;
-	
-
-	//섹터에 본인을 추가해야한다.
+	//섹터초기화
 	int col = objects[id]->_sectorCol;
 	int row = objects[id]->_sectorRow;
 
@@ -149,7 +134,6 @@ void SessionManager::LoginSession(int id, char* name)
 		objects[id]->_state = ST_INGAME;
 	}
 
-	//섹터에 본인섹터 포함 3x3에 알려줘야한다.
 	unordered_set<int> objs;
 	for (int i = -1; i < 2; ++i) {
 		if (col + i <0 || col + i >SECTOR_NUM) continue;
@@ -177,83 +161,6 @@ void SessionManager::LoginSession(int id, char* name)
 					server->WakeupNpc(clientId, id);
 
 				}
-				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name, 
-					objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
-
-
-	
-			}
-		}
-	}
-	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
-	server->InputTimerEvent(ev);
-
-}
-void SessionManager::LoginSession(int id, int visual)
-{
-	//TODO. name 변경해야함
-	strcpy_s(objects[id]->_name, "name");
-	{
-		lock_guard<mutex> ll{ objects[id]->_sLock };
-		objects[id]->_state = ST_INGAME;
-	}
-
-	//데베 받으면 초기정보 init하는거 object에 한개 만들어서 따로빼자
-	//objects[id]->init()이런식으로 빼자. 
-	objects[id]->_x = 5;//rand() % W_WIDTH;
-	objects[id]->_y = 5;//rand() % W_HEIGHT;
-	objects[id]->_visual = visual;
-
-
-
-	objects[id]->SendLoginPacket();
-
-	objects[id]->_sectorCol = objects[id]->_x / SECTOR_SIZE;
-	objects[id]->_sectorRow = objects[id]->_y / SECTOR_SIZE;
-
-	//섹터에 본인을 추가해야한다.
-	int col = objects[id]->_sectorCol;
-	int row = objects[id]->_sectorRow;
-
-	sector[col][row].InsertObjectInSector(id);
-
-
-	//그리고 상태를 바꿔야함.
-	{
-		lock_guard<mutex> ll{ objects[id]->_sLock };
-		objects[id]->_state = ST_INGAME;
-	}
-
-	//섹터에 본인섹터 포함 3x3에 알려줘야한다.
-	unordered_set<int> objs;
-	for (int i = -1; i < 2; ++i) {
-		if (col + i <0 || col + i >SECTOR_NUM) continue;
-
-		for (int j = -1; j < 2; ++j) {
-			if (row + j <0 || row + j >SECTOR_NUM) 	continue;
-			sector[col + i][row + j].SetObjectList(objs);
-			for (int clientId : objs) {
-
-				{
-					lock_guard<mutex> ll(objects[clientId]->_sLock);
-					if (ST_INGAME != objects[clientId]->_state) continue;
-				}
-				if (objects[clientId]->_id == id) continue;
-				if (false == CanSee(id, objects[clientId]->_id)) continue;
-				//플레이어일때
-				if (clientId < MAX_USER) {
-
-					objects[clientId]->SendAddPlayerPacket(
-						id, objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
-
-				}
-				else {
-					//npc일때
-					//wakeup해줘야함
-					server->WakeupNpc(clientId, id);
-
-					
-				}
 				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
 					objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
 
@@ -263,11 +170,12 @@ void SessionManager::LoginSession(int id, int visual)
 		}
 	}
 
-	//위치 생각해봐야함.
+	//TODO.여기를 고민해야함 -> 회복하는거를 언제부터 해야할지를 생각해봐야한다
 	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
 	server->InputTimerEvent(ev);
 
 }
+
 
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 {
@@ -472,11 +380,17 @@ void SessionManager::AttackSession(int id, char dir)
 			static_cast<NPC*>(objects[npcId])->_isMove = false;
 
 			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
-			objects[npcId]->OnAttackReceived(objects[id]->_damage);
+			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+				//죽으면 true반환한다.->일단 테스트로 10초후 ㅂ활로 설정함
+				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 10s, EV_NPC_DIE, 0 };
+				server->InputTimerEvent(dieev);
+
+			}
 
 			//3초뒤에 다시 움직이게 하자.
 			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
 
+			//TODO. 이동타입이 peace가 아닌경우에만 넣도록 수정해야한다.
 			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
 			server->InputTimerEvent(ev);
 		}

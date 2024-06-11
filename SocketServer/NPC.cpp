@@ -164,7 +164,7 @@ void NPC::OnAttackSuccess(int type)
 	//얘는 type필요없긴한데 걍 일단 넣음
 }
 
-void NPC::OnAttackReceived(int damage)
+bool NPC::OnAttackReceived(int damage)
 {
 
 	//일단 10을 줄이자.
@@ -173,17 +173,12 @@ void NPC::OnAttackReceived(int damage)
 	_hp -= damage;
 	std::cout << _hp << "가 되었다" << std::endl;
 
-	//hp0되면 시간 저장해아한다. 30초뒤에 부활해야함.
+
 	if (_hp <= 0) {
-		dieTime = std::chrono::system_clock::now();
 		std::cout << _id <<" 몬스터는 죽었다." << std::endl;
-
-		//30초 후에 살아나야한다.
-		//죽으면 true를 리턴할까?
-		
-	//타이머 가동해야하나???
+		return true;
 	}
-
+	return false;
 	
 
 

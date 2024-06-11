@@ -27,10 +27,10 @@ public:
 	void ProcessTeleportPacket(int id, char* buf, int copySize);
 	void ProcessLogoutPacket(int id, char* buf, int copySize);
 
-	//
-	int CheckUserInDB(const char* name, GameData& data);
+	//DB관련작업
+	int CheckUserInDB(const char* name, GameData* data);
 	bool AddUSerInDB(const char* name);
-
+	bool AddVisualInfoInDB(const char* name, int visual);
 
 };
 

@@ -35,8 +35,8 @@ public:
 	void SetUserGameData(int id, GameData& data);
 
 	int CheckLoginSession(int id);		//TODO. 기존에접속중인지 확인해야함
-	void LoginSession(int id, char* name);
-	void LoginSession(int id, int visual);
+	//GameData인자로 받아서 그거로 로긴하는거임
+	void LoginSession(int id);
 
 	void MoveSession(int id, CS_MOVE_PACKET* packet);
 	void CharChoiceSession(int id);

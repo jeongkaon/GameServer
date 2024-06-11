@@ -11,7 +11,6 @@ class MapManager
 public:
 	MapManager();
 	void InitMapInfo();
-//	void InitNpcInfo();
 
 	bool IsCanGoCheck(int dir, int& x, int& y);
 

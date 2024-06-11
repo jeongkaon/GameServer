@@ -163,6 +163,14 @@ void Server::Timer()
 				break;
 
 			}
+			case EV_NPC_DIE:
+			{
+				ExpOver* ov = new ExpOver;
+				ov->_comp_type = OP_NPC_RESPAWN;
+				PostQueuedCompletionStatus(_iocp, 4, ev.obj_id, &ov->_over);
+				break;
+
+			}
 			}
 		
 			continue;		// 즉시 다음 작업 꺼내기
@@ -291,6 +299,7 @@ void Server::Worker()
 			break;
 		}
 		case OP_NPC_MOVE_ACTIVE: {
+			//TODO. 수정할거 있ㅇ다. 여러번때리면 여러번 추가되서 이상해짐 개빨리 움직임
 			std::cout << key << "NPC 다시 움직임 활성화됨\n";
 			static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove = true;
 			TimerEvent ev{ key, chrono::system_clock::now() + 3s, EV_RANDOM_MOVE, 0 };
@@ -301,7 +310,7 @@ void Server::Worker()
 		}
 		case OP_RECOVER_HP:
 		{
-			std::cout << key << "PLAYER의 체력 10%회복되는 타이머발동~\n";
+			//std::cout << key << "PLAYER의 체력 10%회복되는 타이머발동~\n";
 
 			//TODO. max체력 안넘게 수정해야한다.
 			//일단 현재의 hp의 10프로 회복하는거로함 
@@ -326,6 +335,8 @@ void Server::Worker()
 		case OP_NPC_RESPAWN:
 		{
 			//NPC죽었으면 다시 부활하는거임.
+			//부활하는거 코드 써야하낟. 타이머까지는 넣음
+			std::cout << key << "번째 NPC 부활" << std::endl;
 			delete exOver;
 			break;
 
