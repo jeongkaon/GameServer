@@ -7,6 +7,7 @@
 
 int NPC::TotalNpcCount = 0;
 NPC::NPC()
+	
 {
 
 	sprintf_s(_name, "NPC%d", _id);
@@ -23,7 +24,7 @@ NPC::NPC(int x, int y)
 
 void NPC::init(int x, int y, int visual)
 {
-
+	astar.init(x, y, 20);
 	_id = MAX_USER + TotalNpcCount++;
 	
 	_state = ST_INGAME;
@@ -165,34 +166,6 @@ bool NPC::OnAttackReceived(int damage)
 
 }
 
-void NPC::AStar()
-{
-	//int startX = _x;
-	//int startY = _y;
-
-	//int destX = _x + _rangeX;
-	//int destY = _y + _rangeY;
-
-	////흠 대각선빼버릴까? 일단 빼고 4방향으로
-
-	//vector<vector<bool>> closed(_rangeY, vector<bool>(_rangeX, false));
-	////int maxNum = std::numeric_limits<int>::max();
-
-	//vector<vector<int>> best(_rangeY, vector<int>(_rangeX, INT32_MAX));
-
-	//map<pair<int, int>, pair<int, int>> parent;
-	//priority_queue<PQNode, vector<PQNode>, greater<PQNode>> pq;
-
-	////초기값
-	//{
-	//	int g = 0;
-	//	int h = 10 * (abs(destY - startY) + abs(destX - startX));
-	//	pq.push(PQNode{ g + h, g, startX,startY });
-	//	best[startY][startX] = g + h;
-	//	parent[make_pair(startY,startX)] = make_pair(startY, startX);
-	//}
-
-}
 
 
 

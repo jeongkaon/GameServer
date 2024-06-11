@@ -30,7 +30,6 @@ private:
     // 나중에 유니크포인터 사용하는거로 바꿔도될듯?
     SessionManager* _sessionMgr;
     PacketManager* _packetMgr;
-    MapManager* _mapMgr;
     DBConnectionPool* _dbConnPool;
 
     concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;
@@ -44,6 +43,8 @@ private:
 
 public:
     ~Server();
+    //일단 여기로옮김
+    MapManager* _mapMgr;
 
     static Server* getInstance();
 

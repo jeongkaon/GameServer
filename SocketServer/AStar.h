@@ -13,37 +13,6 @@ struct PQNode {
 
 };
 
-struct Pos { int x; int y; };
-
-Pos front[] =
-{
-	Pos { -1, 0},	// UP
-	Pos { 0, -1},	// LEFT
-	Pos { 1, 0},	// DOWN
-	Pos { 0, 1},	// RIGHT
-
-	//대각선을 위한 실습으로 추가한 애들
-	Pos {-1, -1},	// UP_LEFT
-	Pos {1, -1},	// DOWN_LEFT
-	Pos {1, 1},		// DOWN_RIGHT
-	Pos {-1, 1},	// UP_RIGHT
-};
-
-//이동할때 드는 비용임.
-int cost[] =
-{
-	10, // UP
-	10, // LEFT
-	10, // DOWN
-	10, // RIGHT
-
-	//대각선은 14정도로 설정
-	14,
-	14,
-	14,
-	14
-};
-
 class AStar
 {
 	int startX;
@@ -63,8 +32,10 @@ class AStar
 
 
 public:
-	AStar(){}
-	AStar(int x, int y, int range);
+	AStar();
+	AStar(int x, int y, int searchRange);
+
+	void init(int x, int y, int searchRange);
 	
 	void FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path);
 };

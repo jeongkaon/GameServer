@@ -8,14 +8,6 @@ constexpr int ATTACK_RANGE = 1;
 constexpr int INIT_X_POS = 3;
 constexpr int INIT_Y_POS = 1;
 
-//±Ê√£±‚
-enum Cost {
-	UP_COST=10,
-	DOWN_COST = 10,
-	LEFT_COST=10,
-	RIGHT_COST = 10,
-
-};
 
 enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, 
 	OP_PLAYER_MOVE, OP_NPC_MOVE_ACTIVE,OP_RECOVER_HP, OP_NPC_RESPAWN,

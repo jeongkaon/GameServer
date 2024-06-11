@@ -3,7 +3,7 @@
 
 
 
-
+#include "AStar.h"
 
 class NPC :public Object
 {
@@ -19,6 +19,8 @@ public:
 	
 	bool _isMove;
 	std::vector<std::pair<int, int>> path;
+	AStar astar;
+
 
 
 public:
@@ -36,7 +38,6 @@ public:
 	bool OnAttackReceived(int damage);
 
 	//±Ê√£±‚
-	void AStar();
 
 };
 

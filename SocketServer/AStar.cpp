@@ -2,11 +2,67 @@
 #include "AStar.h"
 #include "MapManager.h"
 
-AStar::AStar(int x, int y, int range)
-	: startX(x), startY(y),destX(x+range),destY(y+range),
-	closed(range, std::vector<bool>(range, false)),
-	best(range, std::vector<int>(range, INT32_MAX))
+
+struct Pos { int x; int y; };
+
+Pos front[] =
 {
+	Pos { -1, 0},	// UP
+	Pos { 0, -1},	// LEFT
+	Pos { 1, 0},	// DOWN
+	Pos { 0, 1},	// RIGHT
+
+	//대각선을 위한 실습으로 추가한 애들
+	Pos {-1, -1},	// UP_LEFT
+	Pos {1, -1},	// DOWN_LEFT
+	Pos {1, 1},		// DOWN_RIGHT
+	Pos {-1, 1},	// UP_RIGHT
+};
+
+//이동할때 드는 비용임.
+int cost[] =
+{
+	10, // UP
+	10, // LEFT
+	10, // DOWN
+	10, // RIGHT
+
+	//대각선은 14정도로 설정
+	14,
+	14,
+	14,
+	14
+};
+
+
+AStar::AStar()
+	:closed(20, std::vector<bool>(20, false)),
+	best(20, std::vector<int>(20, INT32_MAX))
+
+{
+
+}
+
+AStar::AStar(int x, int y, int searchRange)
+	: startX(x), startY(y),destX(x+ searchRange),destY(y+ searchRange),
+	closed(searchRange, std::vector<bool>(searchRange, false)),
+	best(searchRange, std::vector<int>(searchRange, INT32_MAX))
+{
+	int g = 0;
+	int h = 10 * (abs(destY - startY) + abs(destX - startX));
+	pq.push(PQNode{ g + h, g, startX,startY });
+	best[startY][startX] = g + h;
+	parent[{x, y}] = { x,y };
+
+}
+
+void AStar::init(int x, int y, int searchRange)
+{
+	startX = x;
+	startY = y;
+	destX = x + searchRange;
+	destY = y + searchRange;
+
 	int g = 0;
 	int h = 10 * (abs(destY - startY) + abs(destX - startX));
 	pq.push(PQNode{ g + h, g, startX,startY });
@@ -40,6 +96,8 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 			int nextY = node.y + front[dir].y;
 
 			// 갈 수 있는 지역은 맞는지 확인
+			if (nextX < 0 || nextX >= W_WIDTH || nextY<0 || nextY>W_HEIGHT) continue;
+
 			if (false == mapMgr->IsCanGoCheck(dir, nextX, nextY)) {
 				continue;
 			}
