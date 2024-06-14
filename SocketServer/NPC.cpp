@@ -46,17 +46,23 @@ void NPC::init(int x, int y, int visual)
 	switch (visual)
 	{
 	case PEACE_FIXED:
-		_isMove = false;
+		_moveType = MOVE_FIXED;
+		_monType = TYPE_PEACE;
 		break;
 	case PEACE_ROAMING:
-		_isMove = true;
+		_moveType = MOVE_ROAMING;
+		_monType = TYPE_PEACE;
+
 		break;
 	case AGRO_FIXED:
-		_isMove = false;
+		_moveType = MOVE_FIXED;
+		_monType = TYPE_AGRO;
 
 		break;
 	case AGRO_ROAMING:
-		_isMove = true;
+		_moveType = MOVE_ROAMING;
+		_monType = TYPE_AGRO;
+
 		break;
 
 	default:
@@ -86,6 +92,8 @@ void NPC::init(int x, int y, int visual)
 	lua_register(_L, "API_SendMessage", API_SendMessage);
 	lua_register(_L, "API_get_x", API_get_x);
 	lua_register(_L, "API_get_y", API_get_y);
+	lua_register(_L, "API_MoveTo", API_MoveTo);
+
 }
 
 void NPC::DoRandomMove()

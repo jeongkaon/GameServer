@@ -19,7 +19,7 @@ public:
 	//°ÔÀÓÄÁÅÙÃ÷
 	short _x, _y;
 	int _visual;
-	int _hp;
+	int _hp; 
 	int _maxHp;
 	int _damage;
 

@@ -11,6 +11,9 @@ constexpr int MAX_NPC = 200000;
 constexpr int W_WIDTH = 2000;
 constexpr int W_HEIGHT = 2000;
 
+constexpr int VIEW_RANGE = 5;
+
+
 // Packet ID
 
 constexpr char CS_REGIST = 6;

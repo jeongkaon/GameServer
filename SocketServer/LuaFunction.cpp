@@ -31,3 +31,12 @@ int API_SendMessage(lua_State* L)
 	//clients[user_id].send_chat_packet(my_id, mess);
 	return 0;
 }
+
+int API_MoveTo(lua_State* L)
+{
+	int id = lua_tointeger(L, -3);
+	int x = lua_tointeger(L, -2);
+	int y = lua_tointeger(L, -1);
+	std::cout << "Moving ID " << id << " to position (" << x << ", " << y << ")" << std::endl;
+	return 0;
+}

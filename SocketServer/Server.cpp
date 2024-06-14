@@ -152,7 +152,7 @@ void Server::Timer()
 			{
 				ExpOver* ov = new ExpOver;
 				ov->_comp_type = OP_NPC_MOVE_ACTIVE;
-				PostQueuedCompletionStatus(_iocp, 2, ev.obj_id, &ov->_over);
+				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 
 			}
@@ -160,7 +160,7 @@ void Server::Timer()
 			{
 				ExpOver* ov = new ExpOver;
 				ov->_comp_type = OP_RECOVER_HP;
-				PostQueuedCompletionStatus(_iocp, 3, ev.obj_id, &ov->_over);
+				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 
 			}
@@ -168,7 +168,7 @@ void Server::Timer()
 			{
 				ExpOver* ov = new ExpOver;
 				ov->_comp_type = OP_NPC_RESPAWN;
-				PostQueuedCompletionStatus(_iocp, 4, ev.obj_id, &ov->_over);
+				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 
 			}
@@ -229,14 +229,9 @@ void Server::Worker()
 
 		}
 		case OP_RECV: {
-			//어떤 클라이언트가 send했다. 서버는 그 패킷을 recv하는 상황.
-			//패킷재조립이 필요함-> 일단 교수님 코드로해
-
-			//위에서 이미 누가 보냈는지 확인함
 			int remain_data = num_bytes + static_cast<Session*>(_sessionMgr->objects[key])->_prevRemain;
 			char* p = exOver->_send_buf;
 			while (remain_data > 0) {
-				//TODO.패킷프로토콜 기존 char -> short로 바꿈 ->수정완료
 				short* pSize = (short*)&p[0];
 				int packet_size = *pSize;
 
@@ -261,18 +256,35 @@ void Server::Worker()
 			break;
 		}
 		case OP_NPC_MOVE: {
+
+			//move type이 roaming인 애들만 움직인다.->애초에 fix인애들한테는 이거 안들어옴
+			//20x20에서 자유롭게 이동
+			//장애물은 a* 길찾기로 이동한다..->이걸해결해야함
+
 			bool keep_alive = false;
-			for (int j = 0; j < MAX_USER; ++j) {
-				if (_sessionMgr->objects[j]->_state != ST_INGAME) continue;
-				if (_sessionMgr->CanSee(static_cast<int>(key), j)) {
-					keep_alive = true;
-					break;
+
+			int col = _sessionMgr->objects[key]->_sectorCol;
+			int row = _sessionMgr->objects[key]->_sectorRow;
+			
+			unordered_set<int> objs; 
+			for (int i = -1; i < 2; ++i) {
+				if (col + i <0 || col + i >SECTOR_NUM) continue;
+				for (int j = -1; j < 2; ++j) {
+					if (row + j <0 || row + j >SECTOR_NUM) continue;
+					SessionManager::sector[col + i][row + j].SetObjectList(objs);
+					for (int clientId : objs) {
+						if (_sessionMgr->objects[clientId]->_state != ST_INGAME) continue;
+						if (clientId >= MAX_USER) continue;
+						if (_sessionMgr->CanSee(static_cast<int>(key), clientId)) {
+							keep_alive = true;
+							break;
+						}
+					}
 				}
 			}
 
 			if (true == keep_alive) {
-				if (_sessionMgr->objects[static_cast<int>(key)]->_visual == PEACE_FIXED) break;
-				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove == false) break;
+				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_moveType == MOVE_FIXED) break;
 
 				_sessionMgr->NpcRandomMove(static_cast<int>(key));
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
@@ -291,6 +303,7 @@ void Server::Worker()
 			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
 
 			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
+			//lua_getglobal(L, "event_move_to_player");			//이걸 호출해줘야한다.
 			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
 			lua_pcall(L, 1, 0, 0);
 			//lua_pop(L, 1);
@@ -301,8 +314,9 @@ void Server::Worker()
 		}
 		case OP_NPC_MOVE_ACTIVE: {
 			//TODO. 수정할거 있ㅇ다. 여러번때리면 여러번 추가되서 이상해짐 개빨리 움직임
+			//이부분지워버릴까..
 			std::cout << key << "NPC 다시 움직임 활성화됨\n";
-			static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove = true;
+			//static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove = true;
 			TimerEvent ev{ key, chrono::system_clock::now() + 3s, EV_RANDOM_MOVE, 0 };
 			_timerQueue.push(ev);
 
@@ -335,13 +349,7 @@ void Server::Worker()
 		}
 		case OP_NPC_RESPAWN:
 		{
-			//NPC죽었으면 다시 부활하는거임.
-			//부활하는거 코드 써야하낟. 타이머까지는 넣음
-			
-			//섹터에 추가해주고
-			//애둘한테 알려줘야한다.
 			_sessionMgr->RespawnNPC(key);
-
 			std::cout << key << "번째 NPC 부활" << std::endl;
 			delete exOver;
 			break;
@@ -365,20 +373,31 @@ int Server::LuaGetY(int id)
 
 void Server::WakeupNpc(int npc, int player)
 {
-	ExpOver* exover = new ExpOver;
-
-	//한개가 더 추가됨,주위 npc들에게 플레이어가 이동했으니까 ai를 실행하라고 알려줘야한다.
-	exover->_comp_type = OP_PLAYER_MOVE;
-	exover->_ai_target_obj = player;										//waker가 깨웠다. 얘가 깨웟으니까 처리하라고한다.
-	PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);		//이거 오버헤드가 엄청크다. 이 npc가 ai로 스크립트로 돌아가는건지 아닌지 flag을 둬서
-	//스크립트로 돌아가는것만 post해줘야한다. 
-	//여기에 넣으면 worker에서 처리된다.
-
+	//움직임 타입이 고정이면 안움직이니까 고정하자.
+	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_moveType == MOVE_FIXED) return;
 	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active) return;
+
+	//TODO. 이거 오버헤드가 엄청크다. 이 npc가 ai로 스크립트로 돌아가는건지 아닌지 flag을 둬
+	//고정인거는 위에서 걸렀다.
+	//이건 루아에서 해줄거 넣어주는거고 스크립트로 돌아가는것만 post해줘야한다->오버헤드가커서
+	ExpOver* exover = new ExpOver;
+	exover->_comp_type = OP_PLAYER_MOVE;
+	exover->_ai_target_obj = player;
+	PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);		
 
 	bool old_state = false;
 	if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
 		return;
+
+
+	//TODO. 타이머 중복으로 push된다.!!! 빨라짐 고쳐야한다.
+	//->npc에 시간저장해서 해결함
+	std::chrono::system_clock::time_point nowTime = chrono::system_clock::now();
+	if (nowTime - static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime < 3ms) {
+		return;
+	}
+	static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
+
 	TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
 	_timerQueue.push(ev);
 
@@ -387,10 +406,7 @@ void Server::WakeupNpc(int npc, int player)
 void Server::InputTimerEvent(TimerEvent* ev)
 {
 	_timerQueue.push(*ev);
-
-	//되나ㅣ?
 	delete ev;
-
 }
 
 

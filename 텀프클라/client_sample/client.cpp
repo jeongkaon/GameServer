@@ -43,6 +43,7 @@ sf::View view;
 sf::Texture* Visuals[4];
 sf::Texture* MushRoom;
 sf::Texture* backgroundTexture;
+sf::RectangleShape debugBox(sf::Vector2f((VIEW_RANGE+1)*TILE_WIDTH*2, 2*(VIEW_RANGE+1)*TILE_WIDTH)); // 50x50 크기의 박스
 
 
 float viewX;
@@ -381,6 +382,11 @@ void client_main()
 	for (auto& pl : players) pl.second.draw();
 	avatar.draw();
 
+	//디버깅박스를 그린다
+	debugBox.setPosition((avatar.m_x- VIEW_RANGE )* TILE_WIDTH , (avatar.m_y- VIEW_RANGE)* TILE_WIDTH);
+	g_window->draw(debugBox);
+
+
 	//아이디를 그린다.
 	sf::Text text;
 	text.setFont(g_font);
@@ -631,6 +637,11 @@ void LoginWindow(sf::RenderWindow& window1, bool& isLoginWindow1Closed)
 //실제 게임블레이창->main으로 옮길까?
 void GameWindow() 
 {
+	//디버깅용박스
+	// 디버깅 박스 설정
+	debugBox.setFillColor(sf::Color::Transparent); // 투명한 채우기 색
+	debugBox.setOutlineColor(sf::Color::Red); // 빨간색 테두리
+	debugBox.setOutlineThickness(2); // 테두리 두께 설정
 
 
 	// 스프라이트 생성 및 텍스처 설정
@@ -745,7 +756,9 @@ void GameWindow()
 		}
 		view.setCenter(viewX, viewY);
 		g_window->setView(view);
+
 		g_window->clear();
+
 		g_window->draw(backgroundSprite);
 		client_main();
 		g_window->display();

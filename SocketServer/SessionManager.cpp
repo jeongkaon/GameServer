@@ -395,7 +395,6 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 void SessionManager::Attack(int npcId, int id)
 {
 	std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
-	static_cast<NPC*>(objects[npcId])->_isMove = false;
 	objects[id]->OnAttackSuccess(objects[npcId]->_visual);
 	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
 

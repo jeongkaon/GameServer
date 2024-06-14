@@ -8,6 +8,7 @@ constexpr int ATTACK_RANGE = 1;
 constexpr int INIT_X_POS = 3;
 constexpr int INIT_Y_POS = 1;
 
+enum NpcType{MOVE_FIXED, MOVE_ROAMING, TYPE_AGRO, TYPE_PEACE};
 
 enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, 
 	OP_PLAYER_MOVE, OP_NPC_MOVE_ACTIVE,OP_RECOVER_HP, OP_NPC_RESPAWN,

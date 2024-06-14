@@ -16,9 +16,14 @@ public:
 	lua_State* _L;
 	
 	
-	bool _isMove;
+	//bool _isMove;
 	std::vector<std::pair<int, int>> path;
 	//AStar astar;
+
+	int _moveType;
+	int _monType;	//peace or agro
+
+	std::chrono::system_clock::time_point wakeupTime;
 
 
 
