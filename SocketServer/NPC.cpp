@@ -16,7 +16,6 @@ NPC::NPC()
 NPC::NPC(int x, int y)
 {
 
-	//루아
 
 }
 
@@ -164,6 +163,12 @@ bool NPC::OnAttackReceived(int damage)
 	
 
 
+}
+
+void NPC::RecoverHP()
+{
+	//TODO. 100인지 아닌지 먼지는 결정해야함
+	_hp = 100;
 }
 
 

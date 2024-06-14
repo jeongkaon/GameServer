@@ -15,7 +15,6 @@ public:
 	std::atomic_bool	_is_active;		
 	lua_State* _L;
 	
-	//TODO. 죽는시간 넣어야한다.->필요없음 걍 30초 바로 넣어주면됨
 	
 	bool _isMove;
 	std::vector<std::pair<int, int>> path;
@@ -37,6 +36,7 @@ public:
 	void OnAttackSuccess(int visual);
 	bool OnAttackReceived(int damage);
 
+	void RecoverHP();
 	//길찾기
 
 };

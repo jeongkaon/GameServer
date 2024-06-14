@@ -132,6 +132,7 @@ void Server::Timer()
 		TimerEvent ev;		//그 구조체임 어디서 선언할지를 모르겟음..
 		auto current_time = chrono::system_clock::now();
 		if (true == _timerQueue.try_pop(ev)) {
+			//top으로 엿보기로 바꾸자.
 			if (ev.wakeup_time > current_time) {
 				_timerQueue.push(ev);		// 최적화 필요
 												// timer_queue에 다시 넣지 않고 처리해야 한다.

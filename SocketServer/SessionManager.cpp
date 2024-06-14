@@ -352,52 +352,8 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 			if (abs(static_cast<int>(objects[npcId]->_x - objects[id]->_x)) > ATTACK_RANGE) {
 				continue;
 			}
+			Attack(npcId, id);
 
-			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
-			static_cast<NPC*>(objects[npcId])->_isMove = false;
-
-			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
-
-			//죽었으면 true를 반환한다. 
-			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
-				//뷰리스트세팅한다.
-				unordered_set<int> _viewlist;
-				std::unordered_set<int> objs;
-
-				int Col = objects[npcId]->_sectorCol;
-				int Row = objects[npcId]->_sectorRow;
-
-				for (int i = -1; i < 1; ++i) {
-					if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-					for (int j = -1; j < 1; ++j) {
-						if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-						sector[Col + i][Row + j].SetObjectList(objs);
-
-						for (int clientId : objs) {
-							if (objects[clientId]->_state != ST_INGAME) continue;
-							if (objects[clientId]->_id > MAX_USER) continue;
-
-							if (false == CanSee(id, objects[clientId]->_id)) continue;
-							_viewlist.insert(objects[clientId]->_id);
-						}
-					}
-				}
-
-				for (int ClidntId : _viewlist) {
-					objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
-				}
-
-				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 10s, EV_NPC_DIE, 0 };
-				server->InputTimerEvent(dieev);
-
-			}
-
-			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
-
-	
-			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
-			server->InputTimerEvent(ev);
 		}
 		break;
 	case UP:
@@ -406,52 +362,11 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 			if (abs(static_cast<int>(objects[npcId]->_x - objects[id]->_x)) > ATTACK_RANGE) {
 				continue;
 			}
-			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
-			static_cast<NPC*>(objects[npcId])->_isMove = false;
-			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
-			//죽었으면 true를 반환한다. 
-			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
-
-				//뷰리스트세팅한다.
-				unordered_set<int> _viewlist;
-				std::unordered_set<int> objs;
-
-				int Col = objects[npcId]->_sectorCol;
-				int Row = objects[npcId]->_sectorRow;
-
-				for (int i = -1; i < 1; ++i) {
-					if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-					for (int j = -1; j < 1; ++j) {
-						if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-						sector[Col + i][Row + j].SetObjectList(objs);
-
-						for (int clientId : objs) {
-							if (objects[clientId]->_state != ST_INGAME) continue;
-							if (objects[clientId]->_id > MAX_USER) continue;
-
-							if (false == CanSee(id, objects[clientId]->_id)) continue;
-							_viewlist.insert(objects[clientId]->_id);
-						}
-					}
-				}
-
-				for (int ClidntId : _viewlist) {
-					objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
-				}
-
-				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 10s, EV_NPC_DIE, 0 };
-				server->InputTimerEvent(dieev);
-
-			}
-			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
-
-			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
-			server->InputTimerEvent(ev);
+			Attack(npcId, id);
 
 		}
 		break;
-	case ALL:
+	case ALL: //4방향공격인데 지금 8방향으로 되어있음..
 		for(int npcId : vlist){
 			if (abs(static_cast<int>(objects[npcId]->_x- objects[id]->_x)) > ATTACK_RANGE) {
 				continue;
@@ -459,49 +374,17 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 			if (abs(static_cast<int>(objects[npcId]->_y- objects[id]->_y)) > ATTACK_RANGE) {
 				continue;
 			}
-			std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
-			static_cast<NPC*>(objects[npcId])->_isMove = false;
-			objects[id]->OnAttackSuccess(objects[npcId]->_visual);
-			if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
 
-				unordered_set<int> _viewlist;
-				std::unordered_set<int> objs;
-
-				int Col = objects[npcId]->_sectorCol;
-				int Row = objects[npcId]->_sectorRow;
-
-				for (int i = -1; i < 1; ++i) {
-					if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-					for (int j = -1; j < 1; ++j) {
-						if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-						sector[Col + i][Row + j].SetObjectList(objs);
-
-						for (int clientId : objs) {
-							if (objects[clientId]->_state != ST_INGAME) continue;
-							if (objects[clientId]->_id >MAX_USER) continue;
-
-							if (false == CanSee(id, objects[clientId]->_id)) continue;
-							_viewlist.insert(objects[clientId]->_id);
-						}
-					}
-				}
-
-				for (int ClidntId : _viewlist) {
-					objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
-				}
-
-				//TEST용으로 5초로 변경함 -> 30초로 해놔야한다.
-				TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 5s, EV_NPC_DIE, 0 };
-				server->InputTimerEvent(dieev);
+			if (abs(static_cast<int>(objects[npcId]->_y - objects[id]->_y)) <= ATTACK_RANGE &&
+				(objects[npcId]->_x ==objects[id]->_x)) {
+				Attack(npcId, id);
 
 			}
+			if (abs(static_cast<int>(objects[npcId]->_x - objects[id]->_x)) <= ATTACK_RANGE &&
+				(objects[npcId]->_y == objects[id]->_y)) {
+				Attack(npcId, id);
 
-			if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) continue;
-
-			TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
-			server->InputTimerEvent(ev);
-
+			}
 		}
 
 		break;
@@ -509,8 +392,57 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 		break;
 	}
 }
+void SessionManager::Attack(int npcId, int id)
+{
+	std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
+	static_cast<NPC*>(objects[npcId])->_isMove = false;
+	objects[id]->OnAttackSuccess(objects[npcId]->_visual);
+	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+
+		unordered_set<int> _viewlist;
+		std::unordered_set<int> objs;
+
+		int Col = objects[npcId]->_sectorCol;
+		int Row = objects[npcId]->_sectorRow;
+
+		for (int i = -1; i < 1; ++i) {
+			if (Col + i <0 || Col + i >SECTOR_NUM) continue;
+
+			for (int j = -1; j < 1; ++j) {
+				if (Row + j <0 || Row + j >SECTOR_NUM) continue;
+				sector[Col + i][Row + j].SetObjectList(objs);
+
+				for (int clientId : objs) {
+					if (objects[clientId]->_state != ST_INGAME) continue;
+					if (objects[clientId]->_id > MAX_USER) continue;
+
+					if (false == CanSee(id, objects[clientId]->_id)) continue;
+					_viewlist.insert(objects[clientId]->_id);
+				}
+			}
+		}
+
+		for (int ClidntId : _viewlist) {
+			objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
+		}
+
+		//TODO. TEST용으로 5초로 변경함 -> 30초로 해놔야한다.
+		TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 5s, EV_NPC_DIE, 0 };
+		server->InputTimerEvent(dieev);
+
+	}
+
+	if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) return;;
+
+	TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
+	server->InputTimerEvent(ev);
+
+
+}
 void SessionManager::RespawnNPC(int npcId)
 {
+	static_cast<NPC*>(objects[npcId])->RecoverHP();
+
 	unordered_set<int> _viewlist;
 	std::unordered_set<int> objs;
 

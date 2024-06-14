@@ -46,6 +46,8 @@ public:
 
 	//공격관련
 	void AttackSessionToNPC(int id, char dir);
+	void Attack(int npcId, int id);		//중복코드 따로 함수로 구현
+
 	void RespawnNPC(int npcId);
 
 };
