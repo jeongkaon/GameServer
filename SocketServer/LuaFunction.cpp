@@ -38,5 +38,7 @@ int API_MoveTo(lua_State* L)
 	int x = lua_tointeger(L, -2);
 	int y = lua_tointeger(L, -1);
 	std::cout << "Moving ID " << id << " to position (" << x << ", " << y << ")" << std::endl;
+	lua_pop(L, 4);
+
 	return 0;
 }

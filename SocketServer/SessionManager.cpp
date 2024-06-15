@@ -215,6 +215,8 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 			}
 		}
 		else {
+			//여기서 다르게해야하나?
+
 			server->WakeupNpc(objects[clientId]->_id, id);
 		}
 

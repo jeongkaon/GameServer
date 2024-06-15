@@ -43,8 +43,7 @@ sf::View view;
 sf::Texture* Visuals[4];
 sf::Texture* MushRoom;
 sf::Texture* backgroundTexture;
-sf::RectangleShape debugBox(sf::Vector2f((VIEW_RANGE+1)*TILE_WIDTH*2, 2*(VIEW_RANGE+1)*TILE_WIDTH)); // 50x50 크기의 박스
-
+sf::RectangleShape debugBox(sf::Vector2f((VIEW_RANGE+0.5f)*TILE_WIDTH*2, 2*(VIEW_RANGE+0.5f)*TILE_WIDTH)); 
 
 float viewX;
 float viewY;

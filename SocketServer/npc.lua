@@ -4,7 +4,7 @@ function set_uid(x)
    myid = x;
 end
 
-function event_player_mov1e(player)
+function event_player_move(player)
    player_x = API_get_x(player);
    player_y = API_get_y(player);
    my_x = API_get_x(myid);
@@ -16,7 +16,7 @@ function event_player_mov1e(player)
    end
 end
 
-function event_player_move(player)
+function event_player_mov1e(player)
     player_x = API_get_x(player)
     player_y = API_get_y(player)
     my_x = API_get_x(myid)

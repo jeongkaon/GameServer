@@ -377,21 +377,33 @@ void Server::WakeupNpc(int npc, int player)
 	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_moveType == MOVE_FIXED) return;
 	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active) return;
 
-	//TODO. 이거 오버헤드가 엄청크다. 이 npc가 ai로 스크립트로 돌아가는건지 아닌지 flag을 둬
-	//고정인거는 위에서 걸렀다.
-	//이건 루아에서 해줄거 넣어주는거고 스크립트로 돌아가는것만 post해줘야한다->오버헤드가커서
-	ExpOver* exover = new ExpOver;
-	exover->_comp_type = OP_PLAYER_MOVE;
-	exover->_ai_target_obj = player;
-	PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);		
+	//어그로구현
+	// 1. x,y빼서 5안에 들어오면 11x11영역에 들어온거임
+	// -> 영역안에 들어왔으면 쫒아오게 해야한다.
+	// -> target_id 써서 루아쓰면될듯??
+	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_monType == TYPE_AGRO) {
+		//타입어그로면 어쩌구저쩌구해야한다.
+		//어그로일때만 루아할까??
+
+	}
+	else {
+		//TODO. 이거 오버헤드가 엄청크다. 이 npc가 ai로 스크립트로 돌아가는건지 아닌지 flag을 둬
+		//고정인거는 위에서 걸렀다.
+		//이건 루아에서 해줄거 넣어주는거고 스크립트로 돌아가는것만 post해줘야한다->오버헤드가커서
+		ExpOver* exover = new ExpOver;
+		exover->_comp_type = OP_PLAYER_MOVE;
+		exover->_ai_target_obj = player;
+		PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
+
+	}
+
+
 
 	bool old_state = false;
 	if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
 		return;
 
 
-	//TODO. 타이머 중복으로 push된다.!!! 빨라짐 고쳐야한다.
-	//->npc에 시간저장해서 해결함
 	std::chrono::system_clock::time_point nowTime = chrono::system_clock::now();
 	if (nowTime - static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime < 3ms) {
 		return;
