@@ -119,4 +119,12 @@
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="npc.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+    <Text Include="section1.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

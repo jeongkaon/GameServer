@@ -46,7 +46,7 @@ void SessionManager::Init()
 		for (int j = 0; j < 150; ++j) {
 			if (_npcInfo[i][j] == 0) continue;
 
-			static_cast<NPC*>(objects[id++])->init(j, i, _npcInfo[i][j]);
+			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);
 		}
 	}
 
@@ -290,6 +290,7 @@ void SessionManager::NpcRandomMove(int id)
 	//Áö±ÝÀº °Á ·£´ýÀÌµ¿ÀÓ.
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
+
 	Col = objects[id]->_sectorCol;
 	Row = objects[id]->_sectorRow;
 
@@ -334,6 +335,83 @@ void SessionManager::NpcRandomMove(int id)
 			}
 		}
 	}
+}
+void SessionManager::NpcAstarMove(int id)
+{
+
+	int Col = objects[id]->_sectorCol;
+	int Row = objects[id]->_sectorRow;
+
+	std::unordered_set<int> old_vl;
+	std::unordered_set<int> objs;
+
+	for (int i = -1; i < 1; ++i) {
+		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
+
+		for (int j = -1; j < 1; ++j) {
+			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
+
+			sector[Col + i][Row + j].SetObjectList(objs);
+
+			for (int clientId : objs) {
+				if (ST_INGAME != objects[clientId]->_state) continue;
+				if (clientId >= MAX_USER) continue;
+				if (false == CanSee(objects[id]->_id, objects[clientId]->_id)) continue;
+				old_vl.insert(objects[clientId]->_id);
+			}
+		}
+	}
+
+	static_cast<NPC*>(objects[id])->DoAstarMove();
+
+	Col = objects[id]->_sectorCol;
+	Row = objects[id]->_sectorRow;
+
+	unordered_set<int> new_viewlist;
+	for (int i = -1; i < 1; ++i) {
+		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
+
+		for (int j = -1; j < 1; ++j) {
+			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
+			sector[Col + i][Row + j].SetObjectList(objs);
+
+			for (int clientId : objs) {
+				if (objects[clientId]->_state != ST_INGAME) continue;
+				if (objects[clientId]->_id == id) continue;
+				if (false == CanSee(id, objects[clientId]->_id)) continue;
+				new_viewlist.insert(objects[clientId]->_id);
+			}
+		}
+	}
+
+
+	for (auto pl : new_viewlist) {
+		if (0 == old_vl.count(pl)) {
+			objects[pl]->SendAddPlayerPacket(objects[id]->_id, objects[id]->_name,
+				objects[id]->_x, objects[id]->_y, objects[id]->_visual);
+		}
+		else {
+			objects[pl]->SendMovePacket(objects[id]->_id,
+				objects[id]->_x, objects[id]->_y, objects[id]->last_move_time, objects[id]->_dir);
+
+		}
+	}
+	for (auto pl : old_vl) {
+		if (0 == new_viewlist.count(pl)) {
+			objects[pl]->_vl.lock();
+			if (0 != objects[pl]->_viewList.count(objects[id]->_id)) {
+				objects[pl]->_vl.unlock();
+				objects[pl]->SendRemovePlayerPacket(objects[id]->_id);
+			}
+			else {
+				objects[pl]->_vl.unlock();
+			}
+		}
+	}
+
+
+
+
 }
 void SessionManager::AttackSessionToNPC(int id, char dir)
 {

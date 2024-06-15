@@ -32,9 +32,9 @@ void MapManager::InitMapInfo()
 
 }
 
+//¾ê°¡ ¹®Á¦´Ù. 
 bool MapManager::IsCanGoCheck(int dir,int& x, int& y)
 {
-
 
 	switch (dir) {
 	case 0: if (y > 0) y--; break;
@@ -43,5 +43,6 @@ bool MapManager::IsCanGoCheck(int dir,int& x, int& y)
 	case 3: if (x < W_WIDTH - 1) x++; break;
 	}
 
+	if (x >= 150 || x < 0 || y >= 150 || y < 0) return false;
 	return _moveInfo[y][x];
 }

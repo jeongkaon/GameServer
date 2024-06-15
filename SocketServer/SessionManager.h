@@ -43,6 +43,7 @@ public:
 
 	//npc관련
 	void NpcRandomMove(int id);
+	void NpcAstarMove(int id);
 
 	//공격관련
 	void AttackSessionToNPC(int id, char dir);

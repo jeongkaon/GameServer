@@ -165,6 +165,10 @@
   <ItemGroup>
     <None Include="npc.lua" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="npc.txt" />
+    <Text Include="section1.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

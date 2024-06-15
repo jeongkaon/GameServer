@@ -286,7 +286,9 @@ void Server::Worker()
 			if (true == keep_alive) {
 				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_moveType == MOVE_FIXED) break;
 
-				_sessionMgr->NpcRandomMove(static_cast<int>(key));
+				//_sessionMgr->NpcRandomMove(static_cast<int>(key));
+				_sessionMgr->NpcAstarMove(static_cast<int>(key));
+
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
 				_timerQueue.push(ev);
 			}

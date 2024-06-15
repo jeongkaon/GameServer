@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NPC.h"
 #include "SessionManager.h"
+#include "MapManager.h"
 #include "Sector.h"
 #include "LuaFunction.h"
 
@@ -21,11 +22,12 @@ NPC::NPC(int x, int y)
 
 
 
-void NPC::init(int x, int y, int visual)
+void NPC::init(MapManager* mgr, int x, int y, int visual)
 {
-	//astar.init(x, y, 20); 일단막음
+	astar.init(x, y, 20); //astar길찾기 초기화시킴.
+
 	_id = MAX_USER + TotalNpcCount++;
-	
+	_pathCount = 0;
 	_state = ST_INGAME;
 	//NPC는 일단 10이로 하기
 	//타입별로 달라야하나??
@@ -71,15 +73,17 @@ void NPC::init(int x, int y, int visual)
 
 	_is_active = false;
 	
+	if (_moveType == MOVE_ROAMING) {
+		astar.FindPath(mgr, &path);
+	}
 
 	_sectorCol = _x / SECTOR_SIZE;
 	_sectorRow = _y / SECTOR_SIZE;
 
-
-	//흠..왜그럴까..
 	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
-	_L = luaL_newstate();
 
+	//루아 사용하는 애들만 해주기?
+	_L = luaL_newstate();
 
 	luaL_openlibs(_L);
 	luaL_loadfile(_L, "npc.lua");
@@ -126,6 +130,9 @@ void NPC::DoRandomMove()
 	}
 
 
+	//astar이동을 해보자.
+
+
 	//TODO. 이동가능한지 아닌지 확인해야함->랜덤이동은 쨋든 그렇다.
 
 	_x = x;
@@ -142,6 +149,29 @@ void NPC::DoRandomMove()
 		SessionManager::sector[curCol][curRow].InsertObjectInSector(_id);
 
 	}
+
+}
+
+void NPC::DoAstarMove()
+{
+
+	_x = path[_pathCount].first;
+	_y = path[_pathCount].second;
+
+	_pathCount += 1;
+
+	int preCol = _sectorCol;
+	int preRow = _sectorRow;
+
+	int curCol = _sectorCol = _x / SECTOR_SIZE;
+	int curRow = _sectorRow = _y / SECTOR_SIZE;
+
+	if (preCol != curCol || preRow != curRow) {
+		SessionManager::sector[preCol][preRow].EraseObjectInSector(_id);
+		SessionManager::sector[curCol][curRow].InsertObjectInSector(_id);
+
+	}
+
 
 }
 

@@ -36,8 +36,8 @@ int cost[] =
 
 
 AStar::AStar()
-	:closed(20, std::vector<bool>(20, false)),
-	best(20, std::vector<int>(20, INT32_MAX))
+	:closed(40, std::vector<bool>(40, false)),
+	best(40, std::vector<int>(40, INT32_MAX))
 
 {
 
@@ -51,7 +51,8 @@ AStar::AStar(int x, int y, int searchRange)
 	int g = 0;
 	int h = 10 * (abs(destY - startY) + abs(destX - startX));
 	pq.push(PQNode{ g + h, g, startX,startY });
-	best[startY][startX] = g + h;
+	best[0][0] = g + h;
+	//best[0][0] = g + h;
 	parent[{x, y}] = { x,y };
 
 }
@@ -67,8 +68,7 @@ void AStar::init(int x, int y, int searchRange)
 	int h = 10 * (abs(destY - startY) + abs(destX - startX));
 	pq.push(PQNode{ g + h, g, startX,startY });
 
-	//여기가 문제였음.
-	best[startY][startX] = g + h;
+	best[0][0] = g + h;
 	parent[{x, y}] = { x,y };
 
 }
@@ -80,12 +80,12 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 		PQNode node = pq.top();
 		pq.pop();
 
-		if (closed[node.y][node.x])
+		if (closed[node.y - startY][node.x - startX])
 			continue;
-		if (best[node.y][node.x] < node.f)
+		if (best[node.y - startY][node.x - startX] < node.f)
 			continue;
 
-		closed[node.y][node.x] = true;
+		closed[node.y - startY][node.x - startX] = true;
 
 		if (node.x == destX && node.y == destY) {
 			break;
@@ -96,16 +96,22 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 		{
 			int nextX = node.x + front[dir].x;
 			int nextY = node.y + front[dir].y;
-
+			
 			// 갈 수 있는 지역은 맞는지 확인
-			if (nextX < 0 || nextX >= W_WIDTH || nextY<0 || nextY>W_HEIGHT) continue;
+			if (nextX > startX + destX || nextX <startX ||
+				nextY >startY + destY || nextY < startY) continue;
 
-			if (false == mapMgr->IsCanGoCheck(dir, nextX, nextY)) {
+			int moveX = nextX;
+			int moveY = nextY;
+		
+			if (false == mapMgr->IsCanGoCheck(dir, moveX, moveY)) {
 				continue;
 			}
+			nextX = moveX;
+			nextY = moveY;
 
 			// 이미 방문한 곳이면 스킵
-			if (closed[nextY][nextX]) {
+			if (closed[nextY-startY][nextX - startX]) {
 				continue;
 			}
 
@@ -113,14 +119,14 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 			int g = node.g + cost[dir];
 			int h = 10 * (abs(destY - nextY) + abs(destX - nextX));
 			// 다른 경로에서 더 빠른 길을 찾았으면 스킵
-			if (best[nextY][nextX] <= g + h)
+			if (best[nextY - startY][nextX - startX] <= g + h)
 				continue;
 
 			// 예약 진행
-			best[nextY][nextX] = g + h;
+			best[nextY - startY][nextX - startX] = g + h;
 			pq.push(PQNode{ g + h, g, nextX,nextY });
 
-			parent[{nextX,nextY}] = { nextX,nextY};
+			parent[{nextX,nextY}] = {node.x,node.y};
 
 		}
 	}
