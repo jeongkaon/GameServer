@@ -67,6 +67,7 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 	
 	
+	//초기화가 안되는거가튼디?
 	GameData userData{ *p->name,1,0,100,INIT_X_POS,INIT_Y_POS,0 };
 	
 	int res = CheckUserInDB(p->name, &userData);
@@ -99,17 +100,19 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 
 	//랜덤으로 x,y넣어주기
 	
-	int x = 3;
-	int y = 1;
+	GameData userData;
+	strcpy_s(userData.user_name, p->name);
+	userData.user_exp = 1;
+	userData.user_level = 1;
+	userData.user_hp = 100;
+	userData.user_x = rand()%150;
+	userData.user_y = rand()%130;
+	userData.user_visual = 1;
 
-
-
-	GameData userData{ *p->name,1,0,100,x,y,1 };
 	_sessionMgr->objects[id]->init(&userData);
 
 	//스트레스용 만들어야하나..?
 	_sessionMgr->LoginSession(id);
-
 
 
 	std::cout << std::endl;

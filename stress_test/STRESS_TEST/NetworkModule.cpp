@@ -107,7 +107,7 @@ void DisconnectClient(int ci)
 void SendPacket(int cl, void* packet)
 {
 	int psize = reinterpret_cast<unsigned char*>(packet)[0];
-	int ptype = reinterpret_cast<unsigned char*>(packet)[1];
+	int ptype = reinterpret_cast<unsigned char*>(packet)[2];
 	OverlappedEx* over = new OverlappedEx;
 	over->event_type = OP_SEND;
 	memcpy(over->IOCP_buf, packet, psize);
