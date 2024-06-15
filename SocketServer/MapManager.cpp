@@ -46,3 +46,8 @@ bool MapManager::IsCanGoCheck(int dir,int& x, int& y)
 	if (x >= 150 || x < 0 || y >= 150 || y < 0) return false;
 	return _moveInfo[y][x];
 }
+
+bool MapManager::IsCanGoCheck(int x, int y)
+{
+	return _moveInfo[y][x];
+}

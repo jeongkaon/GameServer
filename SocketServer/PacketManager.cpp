@@ -25,12 +25,16 @@ void PacketManager::Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConne
 	_recvFuntionMap[(int)CS_REGIST] = &PacketManager::ProcessRegistPacket;
 
 	_recvFuntionMap[(int)CS_LOGIN] = &PacketManager::ProcessLoginPacket;
+	_recvFuntionMap[(int)CS_LOGIN_STRESS] = &PacketManager::ProcessStressLoginPacket;
 	_recvFuntionMap[(int)CS_CHOICE_CHARACTER] = &PacketManager::ProcessChoiceCharactertPacket;
 	_recvFuntionMap[(int)CS_MOVE] = &PacketManager::ProcessMovePacket;
 	_recvFuntionMap[(int)CS_CHAT] = &PacketManager::ProcessChattingPacket;
 	_recvFuntionMap[(int)CS_ATTACK] = &PacketManager::ProcessAttackPacket;
 	_recvFuntionMap[(int)CS_TELEPORT] = &PacketManager::ProcessTeleportPacket;
 	_recvFuntionMap[(int)CS_LOGOUT] = &PacketManager::ProcessLogoutPacket;
+
+
+
 }
 
 void PacketManager::ProcessRecvPacket(int id, char* buf, int copySize)
@@ -88,6 +92,30 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	std::cout << std::endl;
 
 }
+
+void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
+{
+	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
+
+	//랜덤으로 x,y넣어주기
+	
+	int x = 3;
+	int y = 1;
+
+
+
+	GameData userData{ *p->name,1,0,100,x,y,1 };
+	_sessionMgr->objects[id]->init(&userData);
+
+	//스트레스용 만들어야하나..?
+	_sessionMgr->LoginSession(id);
+
+
+
+	std::cout << std::endl;
+
+}
+
 
 void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySize)
 {

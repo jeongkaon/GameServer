@@ -83,6 +83,7 @@ void Session::SendMovePacket(char dir)
 	p.type = SC_MOVE_OBJECT;
 	p.dir = dir;
 	p.x = _x;		
+
 	p.y = _y;
 
 	p.move_time = last_move_time;

@@ -13,6 +13,7 @@ public:
 	void InitMapInfo();
 
 	bool IsCanGoCheck(int dir, int& x, int& y);
+	bool IsCanGoCheck(int x, int y);
 
 	//맵매니져에서 npc위치랑, 충돌이런거 다 체크하는거로 하자.ㄴ
 

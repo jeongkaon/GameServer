@@ -19,6 +19,7 @@ constexpr int VIEW_RANGE = 5;
 constexpr char CS_REGIST = 6;
 
 constexpr char CS_LOGIN = 0;
+constexpr char CS_LOGIN_STRESS = 10;
 constexpr char CS_MOVE = 1;
 constexpr char CS_CHAT = 2;
 constexpr char CS_ATTACK = 3;			// 4 방향 공격

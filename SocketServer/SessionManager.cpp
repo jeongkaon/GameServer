@@ -46,7 +46,7 @@ void SessionManager::Init()
 		for (int j = 0; j < 150; ++j) {
 			if (_npcInfo[i][j] == 0) continue;
 
-			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);
+			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);
 		}
 	}
 
@@ -115,10 +115,6 @@ void SessionManager::LoginSession(int id)
 
 	sector[col][row].InsertObjectInSector(id);
 
-	{
-		lock_guard<mutex> ll{ objects[id]->_sLock };
-		objects[id]->_state = ST_INGAME;
-	}
 
 	unordered_set<int> objs;
 	for (int i = -1; i < 2; ++i) {

@@ -21,6 +21,8 @@ public:
 	void ProcessRegistPacket(int id, char* buf, int copySize);
 	void ProcessChoiceCharactertPacket(int id, char* buf, int copySize);
 	void ProcessLoginPacket(int id, char* buf, int copySize);
+	void ProcessStressLoginPacket(int id, char* buf, int copySize);
+
 	void ProcessMovePacket(int id, char* buf, int copySize);
 	void ProcessChattingPacket(int id, char* buf, int copySize);
 	void ProcessAttackPacket(int id, char* buf, int copySize);

@@ -126,7 +126,7 @@ void SendPacket(int cl, void* packet)
 
 void ProcessPacket(int ci, unsigned char packet[])
 {
-	switch (packet[1]) {
+	switch (packet[2]) {
 	case SC_MOVE_OBJECT: {
 		SC_MOVE_OBJECT_PACKET* move_packet = reinterpret_cast<SC_MOVE_OBJECT_PACKET*>(packet);
 		if (move_packet->id < MAX_CLIENTS) {
@@ -134,6 +134,8 @@ void ProcessPacket(int ci, unsigned char packet[])
 			if (-1 != my_id) {
 				g_clients[my_id].x = move_packet->x;
 				g_clients[my_id].y = move_packet->y;
+				//g_clients[my_id] = move_packet->dir;
+
 			}
 			if (ci == my_id) {
 				if (0 != move_packet->move_time) {
@@ -319,7 +321,7 @@ void Adjust_Number_Of_Client()
 	int temp = num_connections;
 	sprintf_s(l_packet.name, "%d", temp);
 	l_packet.size = sizeof(l_packet);
-	l_packet.type = CS_LOGIN;
+	l_packet.type = CS_LOGIN_STRESS;
 	SendPacket(num_connections, &l_packet);
 
 
