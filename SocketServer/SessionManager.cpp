@@ -286,8 +286,7 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 	
-	//TODO. 이동->장애물찾기 어케함? 
-	//지금은 걍 랜덤이동임.
+
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
 

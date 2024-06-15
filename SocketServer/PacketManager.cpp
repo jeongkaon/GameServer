@@ -205,15 +205,18 @@ bool PacketManager::AddVisualInfoInDB(const char* name, int visual)
 	DBConnection* dbConn = _dbConnPool->Pop();
 	dbConn->Unbind();
 
+	SQLWCHAR query[1024];
+	wsprintf(query,
+		L"UPDATE game_server.dbo.game_data_table SET user_visual = %d		\
+		WHERE user_name = '%s'",	visual, ConvertToWideChar(name));
+
+
+	//wsprintf(query, L"UPDATE Table_3 SET user_x = %d, user_y = %d, user_EXP = %d, user_HP = %d, user_LEVEL = %d WHERE user_id = %d", x, y, exp, hp, level, keyid);
 	SQLLEN len = 0;
 	dbConn->BindParam(1, name, &len);
 	dbConn->BindParam(7, &visual, &len);
 
-	SQLWCHAR query[1024];
-	wsprintf(query,
-		L"UPDATE game_server.dbo.game_data_table SET user_visual = %s WHERE user_name = %d", name, visual);
-
-
+	std::cout << "등록완료?" << std::endl;
 	dbConn->Excute(query);
 
 	_dbConnPool->Push(dbConn);

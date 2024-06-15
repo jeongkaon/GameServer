@@ -10,18 +10,20 @@
 #include "TextBox.h"
 using namespace std;
 
+void client_main();
+
 sf::TcpSocket s_socket;
 
 constexpr auto SCREEN_WIDTH = 16;
 constexpr auto SCREEN_HEIGHT = 16;
 
-constexpr auto TILE_WIDTH = 65;
+constexpr auto TILE_WIDTH = 64/2;
 constexpr auto WINDOW_WIDTH = SCREEN_WIDTH * TILE_WIDTH;   // size of window
 constexpr auto WINDOW_HEIGHT = SCREEN_WIDTH * TILE_WIDTH;
-constexpr auto SPRITE_WIDTH = 64;
-constexpr auto SPRITE_HEIGHT = 384 / 4;
+constexpr auto SPRITE_WIDTH = 64/2;
+constexpr auto SPRITE_HEIGHT = 384 /2/ 4;
 
-constexpr auto SPRITE_MON_HEIGHT = 256/4;
+constexpr auto SPRITE_MON_HEIGHT = 256/4/2;
 
 
 const float speed = 64.0f;
@@ -90,13 +92,33 @@ public:
 
 		spriteX = 0;
 		sprtieY = 0;
-		direction = -1;
 
 	}
 	OBJECT() {
 		m_showing = false;
 	}
+	void init(sf::Texture& t, int x, int y, int x2, int y2, int vis)
+	{
+	
+		m_sprite.setTexture(t);
+		if (vis > 10) {
+			spriteWidth = SPRITE_WIDTH;
+			spriteHeight = SPRITE_MON_HEIGHT;
 
+		}
+		else {
+			spriteWidth = SPRITE_WIDTH;
+			spriteHeight = SPRITE_HEIGHT;
+
+
+		}
+		m_sprite.setTextureRect(sf::IntRect(x, y, x + spriteWidth, y + spriteHeight));
+
+		spriteX = 0;
+		sprtieY = 0;
+
+
+	}
 	void show()
 	{
 		m_showing = true;
@@ -163,11 +185,11 @@ public:
 
 	void draw() {
 		if (false == m_showing) return;
-		float rx = (m_x) * 65.0f + 1;
-		float ry = (m_y) * 65.0f + 1;
+		float rx = (m_x) * 65.0f/2 + 1;
+		float ry = (m_y) * 65.0f /2+ 1;
 
 		if (visual <= 10) {
-			m_sprite.setPosition(rx, ry - 32);
+			m_sprite.setPosition(rx, ry - 16);
 		}
 		else {
 			m_sprite.setPosition(rx, ry );
@@ -176,7 +198,7 @@ public:
 
 		g_window->draw(m_sprite);
 		auto size = m_name.getGlobalBounds();
-		m_name.setPosition(rx + 32 - size.width / 2, ry - 10);
+		m_name.setPosition(rx + 16 - size.width / 2, ry - 5);
 		g_window->draw(m_name);
 
 		//스프라이트 바꾸기
@@ -217,13 +239,11 @@ void ProcessPacket(char* ptr)
 		isLoginWindow1Closed = true;
 		isSelectWindow1Closed = true;
 
-	//	view.setCenter(viewX, viewY);
-	//	g_window->setView(view);
 		avatar.move(packet->x, packet->y);
 
+;
 
-
-
+		
 	}
 	break;
 
@@ -650,17 +670,25 @@ void GameWindow()
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "KAON'S GAME");
 	g_window = &window;
 
-	avatar = OBJECT{ *Visuals[avatar.visual - 1], 0,0, 64 * 4, 384,avatar.visual };
-	avatar.a_draw();
+
+	avatar.init(*Visuals[avatar.visual - 1], 0, 0, 64 * 4 / 2, 384 / 2, avatar.visual);
 
 	//뷰설정
 	view = g_window->getDefaultView();
+
+	client_main();
+	g_window->draw(backgroundSprite);
+	avatar.a_draw();
+	g_window->display();
+
+
 	while (g_window->isOpen())
 	{
 	
 		sf::Event event;
 		while (g_window->pollEvent(event))
 		{
+			
 
 
 			if (event.type == sf::Event::Closed)
@@ -783,7 +811,7 @@ int main()
 	backgroundTexture = new sf::Texture;
 
 	//이거 로딩이 너무 느림.... 백그라운드로 빼고시푼디...
-	if (!backgroundTexture->loadFromFile("section1.png"))
+	if (!backgroundTexture->loadFromFile("section1112.jpg"))
 	{
 		std::cerr << "Error loading background image" << std::endl;
 	}
@@ -814,7 +842,6 @@ int main()
 	}
 
 	if (isSelectWindow1Closed) {
-		//로딩이 너무 느린데???
 		GameWindow();
 	}
 
