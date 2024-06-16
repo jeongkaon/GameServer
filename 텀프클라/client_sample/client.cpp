@@ -31,7 +31,7 @@ sf::Font g_font;
 sf::View view;
 
 sf::Texture* Visuals[4];
-sf::Texture* MushRoom;
+sf::Texture* slimes[4];
 sf::Texture* backgroundTexture;
 sf::Texture* backgroundTexture13;
 
@@ -261,7 +261,7 @@ void ProcessPacket(char* ptr)
 		}
 		else if(id > 0 ){
 			int visual = my_packet->visual;
-			players[id] = OBJECT{ *MushRoom, 0, 0, 64 *3, 64*3,visual };
+			players[id] = OBJECT{ *slimes[visual-1], 0, 0, 64 * 3, 64 * 3,visual};
 			players[id].spriteWidth = SPRITE_WIDTH;
 			players[id].spriteHeight = SPRITE_MON_HEIGHT;
 			players[id].visual = visual;
@@ -904,13 +904,22 @@ int main()
 	for (int i = 0; i < 4; ++i) {
 		Visuals[i] = new sf::Texture;
 	}
-	Visuals[0]->loadFromFile("charType2.png");
-	Visuals[1]->loadFromFile("charType1.png");
+	Visuals[0]->loadFromFile("charType1.png");
+	Visuals[1]->loadFromFile("charType2.png");
 	Visuals[2]->loadFromFile("charType3.png");
 	Visuals[3]->loadFromFile("charType4.png");
 
-	MushRoom = new sf::Texture;
-	MushRoom->loadFromFile("slime_monster.png");
+	for (int i = 0; i < 4; ++i) {
+		slimes[i] = new sf::Texture;
+	}
+	slimes[0]->loadFromFile("slime_monster1.png");
+	slimes[1]->loadFromFile("slime_monster2.png");
+	slimes[2]->loadFromFile("slime_monster3.png");
+	slimes[3]->loadFromFile("slime_monster4.png");
+
+
+
+
 	backgroundTexture = new sf::Texture;
 	backgroundTexture13 = new sf::Texture;
 
