@@ -243,7 +243,6 @@ bool SessionManager::CanSee(int from, int to)
 }
 void SessionManager::disconnect(int key)
 {
-	//여기서 뺑뺑이 도나?
 	for (auto& pl : objects) {
 		{
 			lock_guard<mutex> ll(pl->_sLock);
@@ -548,6 +547,15 @@ void SessionManager::RespawnNPC(int npcId)
 	for (int ClidntId : _viewlist) {
 		objects[ClidntId]->SendAddPlayerPacket(objects[npcId]->_id, objects[npcId]->_name,
 			objects[npcId]->_x, objects[npcId]->_y, objects[npcId]->_visual);
+	}
+}
+
+void SessionManager::BroadcastChatting(void* chat)
+{
+	for (auto& pl : objects)
+	{
+		//접속해있는 애들만
+
 	}
 }
 

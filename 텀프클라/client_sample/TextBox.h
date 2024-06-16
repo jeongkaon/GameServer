@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "defines.h"
 
 // TextBox 클래스 정의
 class TextBox {
@@ -40,9 +41,13 @@ public:
     }
 
     bool isClicked(const sf::Vector2i& mousePos) const {
-        return boxShape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
-    }
+       return boxShape.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
 
+    }
+    bool isClicked(const sf::Vector2f& worldPos) const
+    {
+        return boxShape.getGlobalBounds().contains(worldPos);
+    }
     void addCharacter(char c) {
         userInput += c;
         text.setString(userInput);
@@ -72,12 +77,25 @@ public:
         }
     }
 
+    void ChangePosition(float viewX, float viewY)
+    {
+        //boxShape.move(viewX, viewY);
+        boxShape.setPosition(viewX - WINDOW_WIDTH / 2, viewY - WINDOW_HEIGHT / 2 + WINDOW_HEIGHT-30);
+        text.setPosition(viewX - WINDOW_WIDTH / 2, viewY - WINDOW_HEIGHT / 2 + WINDOW_HEIGHT - 30);
+        cursor.setPosition(text.getPosition().x + text.getLocalBounds().width + 5, text.getPosition().y);
+
+
+
+    }
+
+ 
+    bool isActive = false;
+ 
 private:
     sf::RectangleShape boxShape;
     sf::Text text;
     sf::RectangleShape cursor;
     std::string userInput;
-    bool isActive = false;
     bool showCursor = true;
 };
 

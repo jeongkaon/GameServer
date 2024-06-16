@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h" />
+    <ClInclude Include="defines.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TextBox.h" />
   </ItemGroup>

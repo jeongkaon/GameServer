@@ -164,6 +164,9 @@ void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 
 void PacketManager::ProcessChattingPacket(int id, char* buf, int copySize)
 {
+	CS_CHAT_PACKET* packet = reinterpret_cast<CS_CHAT_PACKET*>(buf);
+
+	
 
 
 }
