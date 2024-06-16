@@ -11,10 +11,8 @@ class SessionManager
 {
 public:
 
-	//npc위치 로딩해야한다.
-	//TODO. 지금은 크기 150인데 이만으로 변경해야한다.
 
-	std::array<std::array<int,150>,150> _npcInfo;
+	std::array<std::array<char, LIMIT_X>, LIMIT_Y> _npcInfo;
 
 	std::array<Object*, MAX_USER + MAX_NPC> objects;
 	static Sector sector[SECTOR_NUM][SECTOR_NUM];

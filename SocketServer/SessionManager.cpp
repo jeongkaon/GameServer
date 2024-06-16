@@ -32,18 +32,25 @@ void SessionManager::Init()
 	int j = 0;
 
 	while (in >> temp) {
-		_npcInfo[i][j] = temp;
+		if (temp > 5) {
+			_npcInfo[i][j] = 0;
+
+		}
+		else {
+			_npcInfo[i][j] = temp;
+
+		}
 		++j;
-		if (j >= 150) {
+		if (j >= LIMIT_X) {
 			++i;
 			j = 0;
 		}
-		if (i >= 150) break;
+		if (i >= LIMIT_X) break;
 	}
 
 	int id = MAX_USER;
-	for (int i = 0; i < 150; ++i) {
-		for (int j = 0; j < 150; ++j) {
+	for (int i = 0; i < LIMIT_Y; ++i) {
+		for (int j = 0; j < LIMIT_X; ++j) {
 			if (_npcInfo[i][j] == 0) continue;
 
 			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);

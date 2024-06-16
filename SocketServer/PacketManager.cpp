@@ -113,8 +113,8 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 	userData.user_exp = 1;
 	userData.user_level = 1;
 	userData.user_hp = 100;
-	userData.user_x = rand()%150;
-	userData.user_y = rand()%130;
+	userData.user_x = rand()% LIMIT_X;
+	userData.user_y = rand()% LIMIT_X;
 	userData.user_visual = rand() % 4+1;
 
 	_sessionMgr->objects[id]->init(&userData);

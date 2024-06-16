@@ -12,7 +12,7 @@ MapManager::MapManager()
 void MapManager::InitMapInfo()
 {
 	//파일을 읽어와서 맵데이터를 저장한다.
-	ifstream in{ "section1.txt",ios::binary};
+	ifstream in{ "collision.txt",ios::binary};
 	
 
 	int temp;
@@ -20,18 +20,16 @@ void MapManager::InitMapInfo()
 	int i = 0;
 	int j = 0;
 
-	//못가는곳이 0, 갈수있는곳이 1
 	while (in >> temp) {
-		//TODO. 고쳐야한다@@@@
-		_moveInfo[i][j] = 0;//!temp; 맵테스트 해야해서 일단 다 1로해놓음
+		_moveInfo[i][j] = !temp;
 
 		++j;
-		if (j >= 150) {
+		if (j >= LIMIT_X) {
 			++i;
 			j = 0;
 		}
 	}
-
+	
 }
 
 //얘가 문제다. 
@@ -47,8 +45,7 @@ bool MapManager::IsCanGoCheck(int dir,int& x, int& y)
 
 	if (x >= LIMIT_X || x < 0 || y >= LIMIT_Y || y < 0) return false;
 
-	//TODO!!!!-> 테스트용으로 다 0으로 세팅해놔서 일단 그렇다.고쳐야함
-	return !_moveInfo[y][x];
+	return _moveInfo[y][x];
 }
 
 bool MapManager::IsCanGoCheck(int x, int y)

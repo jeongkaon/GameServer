@@ -11,7 +11,7 @@ constexpr int MAX_NPC = 200000;
 constexpr int W_WIDTH = 2000;
 constexpr int W_HEIGHT = 2000;
 
-constexpr int VIEW_RANGE = 10;
+constexpr int VIEW_RANGE = 5;
 
 
 // Packet ID
@@ -46,10 +46,10 @@ constexpr int NOT_EXIST_IN_DB = 2005;
 constexpr int NOT_CHOICE_CHARACTER = 2006;
 
 //MonsterType
-constexpr int PEACE_FIXED = 3001;
-constexpr int PEACE_ROAMING = 3002;
-constexpr int AGRO_FIXED = 3003;
-constexpr int AGRO_ROAMING = 3004;
+constexpr int PEACE_FIXED = 1;
+constexpr int PEACE_ROAMING = 2;
+constexpr int AGRO_FIXED = 3;
+constexpr int AGRO_ROAMING = 4;
 
 //
 
