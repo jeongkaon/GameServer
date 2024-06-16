@@ -32,6 +32,8 @@ public:
 	//DB관련작업
 	int CheckUserInDB(const char* name, GameData* data);
 	bool AddUSerInDB(const char* name);
+	bool AddUSerInDB(const GameData* gameData);
+
 	bool AddVisualInfoInDB(const char* name, int visual);
 
 };

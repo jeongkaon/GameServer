@@ -52,6 +52,6 @@ public:
 	void RespawnNPC(int npcId);
 
 	//Ã¤ÆÃ
-	void BroadcastChatting(void* chat);
+	void BroadcastChatting(int id, int len, void* chat);
 
 };

@@ -313,7 +313,15 @@ void ProcessPacket(char* ptr)
 		isLoginWindow1Closed = true;
 		break;
 	}
+	case SC_CHAT:
+	{
+		SC_CHAT_PACKET* my_packet = reinterpret_cast<SC_CHAT_PACKET*>(ptr);
+		//처리해줘야한다.
+		std::cout <<my_packet->mess << std::endl;
 
+		
+		break;
+	}
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
 	}

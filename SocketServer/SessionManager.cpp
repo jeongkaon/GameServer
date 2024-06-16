@@ -550,13 +550,30 @@ void SessionManager::RespawnNPC(int npcId)
 	}
 }
 
-void SessionManager::BroadcastChatting(void* chat)
+void SessionManager::BroadcastChatting(int id, int len, void* chat )
 {
-	for (auto& pl : objects)
-	{
-		//접속해있는 애들만
+	char* str = (char*)chat;
 
+	SC_CHAT_PACKET packet;
+	packet.size = len + 7;
+	packet.type = SC_CHAT;
+	packet.id = id;
+	strncpy(packet.mess, (char*)chat, len);
+
+	for (int i = 0; i < MAX_USER; ++i) {
+
+		{
+			lock_guard<mutex> ll(objects[i]->_sLock);
+			if (ST_INGAME != objects[i]->_state) continue;
+		}
+		std::cout << str << std::endl;
+
+		//보내자.
+		static_cast<Session*>(objects[i])->DoSend(&packet);
+		
 	}
+
+
 }
 
 

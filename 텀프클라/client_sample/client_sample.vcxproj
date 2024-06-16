@@ -139,11 +139,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="chess2.png" />
-    <Image Include="chessmap.bmp" />
-    <Image Include="pngwing.com (13).png" />
-  </ItemGroup>
-  <ItemGroup>
     <Font Include="cour.ttf" />
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +149,16 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="client_sample.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="chartype1.png" />
+    <Image Include="chartype2.png" />
+    <Image Include="chartype3.png" />
+    <Image Include="chartype4.png" />
+    <Image Include="loginwindow.png" />
+    <Image Include="section1112.png" />
+    <Image Include="select.png" />
+    <Image Include="slime_monster.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

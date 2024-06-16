@@ -119,9 +119,10 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 
 	_sessionMgr->objects[id]->init(&userData);
 
-	//스트레스용 만들어야하나..?
+	
 	_sessionMgr->LoginSession(id);
 
+	//AddUSerInDB(&userData);
 
 	std::cout << std::endl;
 
@@ -166,7 +167,8 @@ void PacketManager::ProcessChattingPacket(int id, char* buf, int copySize)
 {
 	CS_CHAT_PACKET* packet = reinterpret_cast<CS_CHAT_PACKET*>(buf);
 
-	
+
+	_sessionMgr->BroadcastChatting(id, copySize - 3 ,&buf[3]);
 
 
 }
@@ -232,6 +234,28 @@ bool PacketManager::AddUSerInDB(const char* name)
 	wsprintf(query, 
 		L"INSERT INTO game_server.dbo.game_data_table (user_name, user_level, user_exp, user_hp, user_x, user_y,user_visual)  \
 		VALUES (\'%s\', %d, %d, %d, %d, %d, %d)", ConvertToWideChar(name),1,0,100, INIT_X_POS, INIT_Y_POS,0);
+
+	dbConn->Excute(query);
+
+	_dbConnPool->Push(dbConn);
+	return true;
+
+
+}
+bool PacketManager::AddUSerInDB(const GameData* gameData)
+{
+	//스트레스 테스트용
+	DBConnection* dbConn = _dbConnPool->Pop();
+	dbConn->Unbind();
+
+	SQLLEN len = 0;
+	dbConn->BindParam(1, gameData->user_name, &len);
+	SQLWCHAR query[1024];
+
+	wsprintf(query,
+		L"INSERT INTO game_server.dbo.game_data_table (user_name, user_level, user_exp, user_hp, user_x, user_y,user_visual)  \
+		VALUES (\'%s\', %d, %d, %d, %d, %d, %d)", ConvertToWideChar(gameData->user_name), 
+		1, 0, 100, gameData->user_x, gameData->user_y, gameData->user_visual);
 
 	dbConn->Excute(query);
 
