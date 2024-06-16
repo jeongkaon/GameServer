@@ -159,6 +159,10 @@ void NPC::DoAstarMove()
 	_y = path[_pathCount].second;
 
 	_pathCount += 1;
+	if (_pathCount == path.size()) {
+		//TODO. 고쳐야함
+		_pathCount = 0;
+	}
 
 	int preCol = _sectorCol;
 	int preRow = _sectorRow;

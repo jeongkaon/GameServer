@@ -69,7 +69,15 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 	
 	//초기화가 안되는거가튼디?
 	GameData userData{ *p->name,1,0,100,INIT_X_POS,INIT_Y_POS,0 };
-	
+	//GameData userData;
+	strcpy_s(userData.user_name, p->name);
+	userData.user_exp = 0;
+	userData.user_level = 1;
+	userData.user_hp = 100;
+	userData.user_x = INIT_X_POS;
+	userData.user_y = INIT_Y_POS;
+	userData.user_visual =0;
+
 	int res = CheckUserInDB(p->name, &userData);
 	_sessionMgr->objects[id]->init(&userData);
 
@@ -107,7 +115,7 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 	userData.user_hp = 100;
 	userData.user_x = rand()%150;
 	userData.user_y = rand()%130;
-	userData.user_visual = 1;
+	userData.user_visual = rand() % 3;
 
 	_sessionMgr->objects[id]->init(&userData);
 

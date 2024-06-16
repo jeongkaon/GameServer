@@ -14,12 +14,12 @@ void client_main();
 
 sf::TcpSocket s_socket;
 
-constexpr auto SCREEN_WIDTH = 16;
-constexpr auto SCREEN_HEIGHT = 16;
+constexpr auto SCREEN_WIDTH = 20;
+constexpr auto SCREEN_HEIGHT = 20;
 
 constexpr auto TILE_WIDTH = 64/2;
-constexpr auto WINDOW_WIDTH = SCREEN_WIDTH * TILE_WIDTH*2;   // size of window
-constexpr auto WINDOW_HEIGHT = SCREEN_WIDTH * TILE_WIDTH*2;
+constexpr auto WINDOW_WIDTH = SCREEN_WIDTH * TILE_WIDTH;   // size of window
+constexpr auto WINDOW_HEIGHT = SCREEN_WIDTH * TILE_WIDTH;
 constexpr auto SPRITE_WIDTH = 64/2;
 constexpr auto SPRITE_HEIGHT = 384 /2/ 4;
 

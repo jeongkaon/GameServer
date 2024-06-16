@@ -46,7 +46,7 @@ void SessionManager::Init()
 		for (int j = 0; j < 150; ++j) {
 			if (_npcInfo[i][j] == 0) continue;
 
-			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);
+			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);
 		}
 	}
 
@@ -151,8 +151,8 @@ void SessionManager::LoginSession(int id)
 	}
 
 	//TODO.여기를 고민해야함 -> 회복하는거를 언제부터 해야할지를 생각해봐야한다
-	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
-	server->InputTimerEvent(ev);
+//	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
+//	server->InputTimerEvent(ev);
 
 }
 
@@ -243,6 +243,7 @@ bool SessionManager::CanSee(int from, int to)
 }
 void SessionManager::disconnect(int key)
 {
+	//여기서 뺑뺑이 도나?
 	for (auto& pl : objects) {
 		{
 			lock_guard<mutex> ll(pl->_sLock);
@@ -251,6 +252,8 @@ void SessionManager::disconnect(int key)
 		if (pl->_id == key) continue;
 		pl->SendRemovePlayerPacket(key);
 	}
+
+	sector[objects[key]->_sectorCol][objects[key]->_sectorRow].EraseObjectInSector(key);
 	closesocket(static_cast<Session*>(objects[key])->_socket);
 
 	lock_guard<mutex> ll(static_cast<Session*>(objects[key])->_sLock);
