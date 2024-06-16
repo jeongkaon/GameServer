@@ -25,6 +25,11 @@ constexpr auto SPRITE_HEIGHT = 384 /2/ 4;
 
 constexpr auto SPRITE_MON_HEIGHT = 256/4/2;
 
+//채팅창 관련
+const int CHATBOX_WIDTH = 400;
+const int CHATBOX_HEIGHT = 200;
+const int CHATBOX_MARGIN = 10;
+
 
 const float speed = 64.0f;
 
@@ -653,7 +658,16 @@ void LoginWindow(sf::RenderWindow& window1, bool& isLoginWindow1Closed)
 
 }
 
-//실제 게임블레이창->main으로 옮길까?
+void updateChatBoxPosition(float viewX, float viewY, sf::RectangleShape& chatBackground, sf::RectangleShape& chatInputBackground, sf::Text& chatInputText)
+{
+	float viewLeft = viewX - WINDOW_WIDTH / 2;
+	float viewTop = viewY - WINDOW_HEIGHT / 2;
+
+	chatBackground.setPosition(viewLeft + CHATBOX_MARGIN, viewTop + WINDOW_HEIGHT - CHATBOX_HEIGHT - CHATBOX_MARGIN);
+	chatInputBackground.setPosition(viewLeft + CHATBOX_MARGIN, viewTop + WINDOW_HEIGHT - CHATBOX_MARGIN - 30);
+	chatInputText.setPosition(viewLeft + CHATBOX_MARGIN + 5, viewTop + WINDOW_HEIGHT - CHATBOX_MARGIN - 25);
+}
+
 void GameWindow() 
 {
 	//디버깅용박스
@@ -671,16 +685,33 @@ void GameWindow()
 	g_window = &window;
 
 
+	// 채팅 관련 변수들
+	bool isInputActive = false;
+
+	std::vector<sf::Text> chatMessages;
+	sf::Text chatInputText;
+	sf::String chatInputString;
+	sf::RectangleShape chatBackground;
+	sf::RectangleShape chatInputBackground;
+
+	//채팅창 설정해보자
+	chatInputText.setFont(g_font);
+	chatInputText.setCharacterSize(20);
+	chatInputText.setFillColor(sf::Color::White);
+	// 채팅 배경 박스 설정
+	chatBackground.setSize(sf::Vector2f(CHATBOX_WIDTH, CHATBOX_HEIGHT));
+	chatBackground.setFillColor(sf::Color(0, 0, 0, 150)); // 반투명 검정색
+
+	// 채팅 입력 배경 박스 설정
+	chatInputBackground.setSize(sf::Vector2f(CHATBOX_WIDTH, 30));
+	chatInputBackground.setFillColor(sf::Color(50, 50, 50, 200)); // 반투명 회색
+
+	updateChatBoxPosition(viewX, viewY, chatBackground, chatInputBackground, chatInputText);
+
 	avatar.init(*Visuals[avatar.visual - 1], 0, 0, 64 * 4 / 2, 384 / 2, avatar.visual);
 
 	//뷰설정
 	view = g_window->getDefaultView();
-
-	client_main();
-	g_window->draw(backgroundSprite);
-	avatar.a_draw();
-	g_window->display();
-
 
 	while (g_window->isOpen())
 	{
@@ -693,9 +724,47 @@ void GameWindow()
 
 			if (event.type == sf::Event::Closed)
 				g_window->close();
+
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					sf::Vector2i mousePos = sf::Mouse::getPosition(*g_window);
+					sf::Vector2f worldPos = g_window->mapPixelToCoords(mousePos);
+					if (chatInputBackground.getGlobalBounds().contains(worldPos.x, worldPos.y)) {
+						isInputActive = true;
+					}
+					else {
+						isInputActive = false;
+					}
+				}
+			}
+
 			if (event.type == sf::Event::KeyPressed) {
 
 				switch (event.key.code) {
+				case sf::Keyboard::Return:	//채팅입력
+				{
+					// 채팅 입력을 서버에 전송
+					if (!chatInputString.isEmpty()) {
+						std::string chatMessage = chatInputString.toAnsiString();
+						// 서버로 채팅 메시지 전송
+						// send_chat_message(chatMessage);
+
+						// 채팅 메시지를 화면에 추가
+						sf::Text newMessage;
+						newMessage.setFont(g_font);
+						newMessage.setCharacterSize(20);
+						newMessage.setFillColor(sf::Color::White);
+						newMessage.setString(chatInputString);
+						chatMessages.push_back(newMessage);
+
+						chatInputString.clear();
+						chatInputText.setString(chatInputString);
+
+						isInputActive = false;
+					}
+					break;
+				}
+
 				case sf::Keyboard::Left: 
 				{
 					avatar.direction = LEFT;
@@ -747,6 +816,7 @@ void GameWindow()
 
 				case sf::Keyboard::A:
 				{
+					if (isInputActive == true) break;
 					std::cout << "공격키 누름\n";
 					//이벡트나 터뜨리자.
 					CS_ATTACK_PACKET p;
@@ -763,6 +833,8 @@ void GameWindow()
 				}
 				case sf::Keyboard::S:
 				{
+					if (isInputActive == true) break;
+
 					CS_ATTACK_PACKET p;
 					p.size = sizeof(p);
 					p.type = CS_ATTACK;
@@ -781,13 +853,36 @@ void GameWindow()
 
 			}
 		}
+		if (isInputActive && event.type == sf::Event::TextEntered) {
+			if (event.text.unicode < 128) {
+				if (event.text.unicode == 8) { // Backspace
+					if (!chatInputString.isEmpty())
+						chatInputString.erase(chatInputString.getSize() - 1, 1);
+				}
+				else {
+					chatInputString += event.text.unicode;
+				}
+				chatInputText.setString(chatInputString);
+			}
+		}		
+		
 		view.setCenter(viewX, viewY);
 		g_window->setView(view);
-
 		g_window->clear();
-
 		g_window->draw(backgroundSprite);
+		updateChatBoxPosition(viewX, viewY, chatBackground, chatInputBackground, chatInputText);
 		client_main();
+
+		// 채팅 메시지 그리기
+		for (size_t i = 0; i < chatMessages.size(); ++i) {
+			chatMessages[i].setPosition(chatBackground.getPosition().x + 5, chatBackground.getPosition().y + 5 + (i * 20));
+			g_window->draw(chatMessages[i]);
+		}
+
+		g_window->draw(chatInputBackground);
+
+		// 현재 입력 중인 채팅 텍스트 그리기
+		g_window->draw(chatInputText);
 		g_window->display();
 	}
 	client_finish();

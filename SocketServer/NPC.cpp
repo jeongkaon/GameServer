@@ -74,7 +74,8 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	_is_active = false;
 	
 	if (_moveType == MOVE_ROAMING) {
-		astar.FindPath(mgr, &path);
+		//astar.FindPath(mgr, &path);
+		//initRandomPath();
 	}
 
 	_sectorCol = _x / SECTOR_SIZE;
@@ -97,6 +98,13 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	lua_register(_L, "API_get_x", API_get_x);
 	lua_register(_L, "API_get_y", API_get_y);
 	lua_register(_L, "API_MoveTo", API_MoveTo);
+
+}
+
+void NPC::initRandomPath()
+{
+	//목적지까지 랜덤으로 길 찍는거임
+	
 
 }
 

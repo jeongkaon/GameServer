@@ -32,6 +32,8 @@ public:
 
 	void init(MapManager* mgr, int x, int y, int visual);
 
+	void initRandomPath();
+
 	void DoRandomMove();
 	void DoAstarMove();
 

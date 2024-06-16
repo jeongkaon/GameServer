@@ -286,8 +286,8 @@ void Server::Worker()
 			if (true == keep_alive) {
 				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_moveType == MOVE_FIXED) break;
 
-				//_sessionMgr->NpcRandomMove(static_cast<int>(key));
-				_sessionMgr->NpcAstarMove(static_cast<int>(key));
+				_sessionMgr->NpcRandomMove(static_cast<int>(key));
+				//_sessionMgr->NpcAstarMove(static_cast<int>(key));
 
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
 				_timerQueue.push(ev);
@@ -319,8 +319,8 @@ void Server::Worker()
 			//이부분지워버릴까..
 			std::cout << key << "NPC 다시 움직임 활성화됨\n";
 			//static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove = true;
-			TimerEvent ev{ key, chrono::system_clock::now() + 3s, EV_RANDOM_MOVE, 0 };
-			_timerQueue.push(ev);
+			//TimerEvent ev{ key, chrono::system_clock::now() + 3s, EV_RANDOM_MOVE, 0 };
+			//_timerQueue.push(ev);
 
 			delete exOver;
 			break;
