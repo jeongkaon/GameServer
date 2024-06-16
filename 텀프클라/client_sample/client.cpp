@@ -33,6 +33,8 @@ sf::View view;
 sf::Texture* Visuals[4];
 sf::Texture* MushRoom;
 sf::Texture* backgroundTexture;
+sf::Texture* backgroundTexture13;
+
 sf::RectangleShape debugBox(sf::Vector2f((VIEW_RANGE+0.5f)*TILE_WIDTH*2, 2*(VIEW_RANGE+0.5f)*TILE_WIDTH)); 
 
 float viewX;
@@ -173,8 +175,8 @@ public:
 
 	void draw() {
 		if (false == m_showing) return;
-		float rx = (m_x) * 65.0f/2 + 1;
-		float ry = (m_y) * 65.0f /2+ 1;
+		int rx = (m_x) * 32;// +1;
+		int ry = (m_y) * 32;// +1;
 
 		if (visual <= 10) {
 			m_sprite.setPosition(rx, ry - 16);
@@ -219,8 +221,8 @@ void ProcessPacket(char* ptr)
 		avatar.m_x = packet->x;
 		avatar.m_y = packet->y;
 		avatar.visual = packet->visual;
-		viewX = packet->x * TILE_WIDTH;
-		viewY = packet->y * TILE_WIDTH;
+		viewX = packet->x  * TILE_WIDTH;
+		viewY = packet->y  * TILE_WIDTH;
 
 
 		avatar.direction = DOWN;
@@ -250,7 +252,7 @@ void ProcessPacket(char* ptr)
 		else if(id <MAX_USER) {
 
 			int visual = my_packet->visual;
-			players[id] = OBJECT{ *Visuals[visual-1], 0, 0, 64 * 4, 384,visual};
+			players[id] = OBJECT{ *Visuals[visual-1], 0, 0, 32 * 4, 384/2,visual};
 			players[id].visual = visual; 
 			players[id].move(my_packet->x, my_packet->y);
 			players[id].set_name(my_packet->name);
@@ -276,8 +278,8 @@ void ProcessPacket(char* ptr)
 		SC_MOVE_OBJECT_PACKET* my_packet = reinterpret_cast<SC_MOVE_OBJECT_PACKET*>(ptr);
 		int other_id = my_packet->id;
 		if (other_id == g_myid) {
-			viewX = my_packet->x * TILE_WIDTH;
-			viewY = my_packet->y * TILE_WIDTH;
+			viewX = my_packet->x * 32;
+			viewY = my_packet->y * 32;
 			view.setCenter(viewX, viewY);
 			g_window->setView(view);
 			avatar.move(my_packet->x, my_packet->y);
@@ -673,6 +675,12 @@ void GameWindow()
 	sf::Sprite backgroundSprite;
 	backgroundSprite.setTexture(*backgroundTexture);
 
+	sf::Sprite backgroundSprite13;
+	backgroundSprite13.setTexture(*backgroundTexture13);
+	//backgroundSprite13.setPosition(500, 0);
+	backgroundSprite13.setPosition(backgroundTexture->getSize().x, 0);
+
+
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "KAON'S GAME");
 	g_window = &window;
 
@@ -767,6 +775,7 @@ void GameWindow()
 				switch (event.key.code) {
 			
 				
+
 				case sf::Keyboard::Left: 
 				{
 					if (ChatInput.isActive == true) break;
@@ -868,24 +877,19 @@ void GameWindow()
 		if (viewX <= 320) viewX = 320;
 		if (viewY <= 320) viewY = 320;
 
+
+		g_window->clear();
 		view.setCenter(viewX, viewY);
 		g_window->setView(view);
-		g_window->clear();
+		
 		g_window->draw(backgroundSprite);
+		g_window->draw(backgroundSprite13);
+
 		g_window->draw(chatInputBackground);
 		g_window->draw(chatBackground);
 		client_main();
 
-		// 채팅 메시지 배경 박스와 메시지 그리기
-		for (size_t i = 0; i < chatMessages.size(); ++i) {
-			chatMessageBackgrounds[i].setPosition(chatBackground.getPosition().x + 5, chatBackground.getPosition().y + 5 + i * 30);
-			g_window->draw(chatMessageBackgrounds[i]);
-			chatMessages[i].setPosition(chatBackground.getPosition().x + 10, chatBackground.getPosition().y + 5 + i * 30);
-			g_window->draw(chatMessages[i]);
-		}
-
 		ChatInput.ChangePosition(viewX, viewY);
-		updateChatBoxPosition(viewX, viewY, chatBackground, chatInputText);
 		ChatInput.draw(*g_window);
 		g_window->display();
 	}
@@ -908,6 +912,7 @@ int main()
 	MushRoom = new sf::Texture;
 	MushRoom->loadFromFile("slime_monster.png");
 	backgroundTexture = new sf::Texture;
+	backgroundTexture13 = new sf::Texture;
 
 	//이거 로딩이 너무 느림.... 백그라운드로 빼고시푼디...
 	if (!backgroundTexture->loadFromFile("section1112.jpg"))
@@ -915,6 +920,10 @@ int main()
 		std::cerr << "Error loading background image" << std::endl;
 	}
 
+	if (!backgroundTexture13->loadFromFile("section1314.jpg"))
+	{
+		std::cerr << "Error loading background image" << std::endl;
+	}
 	wcout.imbue(locale("korean"));
 	sf::Socket::Status status = s_socket.connect("127.0.0.1", PORT_NUM);
 	s_socket.setBlocking(false);

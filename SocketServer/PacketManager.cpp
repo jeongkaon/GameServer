@@ -149,7 +149,7 @@ void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 	int y = _sessionMgr->objects[id]->_y;
 
 	//TODO.지금테스트용은 150인데 나중에 2000으로 바꾸면 W_WIDTH로 바꿔야함
-	if (x >= 150 || x < 0 || y >= 150 || y < 0) {
+	if (x >= LIMIT_X || x < 0 || y >= LIMIT_Y || y < 0) {
 		std::cout << "잘못된 접근" << std::endl;
 		return;
 	}

@@ -22,7 +22,9 @@ void MapManager::InitMapInfo()
 
 	//못가는곳이 0, 갈수있는곳이 1
 	while (in >> temp) {
-		_moveInfo[i][j] = !temp;
+		//TODO. 고쳐야한다@@@@
+		_moveInfo[i][j] = 0;//!temp; 맵테스트 해야해서 일단 다 1로해놓음
+
 		++j;
 		if (j >= 150) {
 			++i;
@@ -43,11 +45,14 @@ bool MapManager::IsCanGoCheck(int dir,int& x, int& y)
 	case 3: if (x < W_WIDTH - 1) x++; break;
 	}
 
-	if (x >= 150 || x < 0 || y >= 150 || y < 0) return false;
-	return _moveInfo[y][x];
+	if (x >= LIMIT_X || x < 0 || y >= LIMIT_Y || y < 0) return false;
+
+	//TODO!!!!-> 테스트용으로 다 0으로 세팅해놔서 일단 그렇다.고쳐야함
+	return !_moveInfo[y][x];
 }
 
 bool MapManager::IsCanGoCheck(int x, int y)
 {
+
 	return _moveInfo[y][x];
 }
