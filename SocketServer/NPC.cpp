@@ -26,7 +26,7 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 
 	_mapMgr = mgr;
 	_id = MAX_USER + TotalNpcCount++;
-	_pathCount = 0;
+	_pathIndex = 0;
 	_state = ST_INGAME;
 	//NPC는 일단 10이로 하기
 	//타입별로 달라야하나??
@@ -158,9 +158,16 @@ void NPC::DoAstarMove(int desx ,int desy)
 	astar.init(_x, _y, desx, desy);
 	astar.FindPath(_mapMgr, &path);
 
-	_x = path[0].first;
-	_y = path[0].second;
+	if (path.size() == 1) {
+		_x = path[0].first;
+		_y = path[0].second;
 
+	}
+	else {
+		_x = path[1].first;
+		_y = path[1].second;
+
+	}
 
 	int preCol = _sectorCol;
 	int preRow = _sectorRow;
@@ -176,6 +183,8 @@ void NPC::DoAstarMove(int desx ,int desy)
 
 
 }
+
+
 
 void NPC::OnAttackSuccess(int type)
 {

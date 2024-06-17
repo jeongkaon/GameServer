@@ -23,7 +23,7 @@ public:
 
 	AStar astar;
 	std::vector<std::pair<int, int>> path;
-	int _pathCount;
+	int _pathIndex;
 
 public:
 	static int TotalNpcCount;

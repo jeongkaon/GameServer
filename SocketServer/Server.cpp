@@ -255,29 +255,28 @@ void Server::Worker()
 		}
 		case OP_PLAYER_MOVE: {
 			//어그로 범위에 들어온 애가 여기로 들어온다.
-			_sessionMgr->objects[key]->_sLock.lock();
-
 			std::cout << "[" << key << "] 의 astar 이전 위치 x:" << _sessionMgr->objects[key]->_x << ", y:" <<
 				_sessionMgr->objects[key]->_y << std::endl;
 
-			static_cast<NPC*>(_sessionMgr->objects[key])->DoAstarMove(
-				_sessionMgr->objects[exOver->_ai_target_obj]->_x,
-				_sessionMgr->objects[exOver->_ai_target_obj]->_y);
+			_sessionMgr->NpcAstarMove(key, exOver->_ai_target_obj);
 
 			std::cout << "[" << key << "] 의 astar 이후 위치 x:" << _sessionMgr->objects[key]->_x << ", y:" <<
-				_sessionMgr->objects[key]->_y << std::endl;
+				_sessionMgr->objects[key]->_y << std::endl << std::endl;
 
+			//_sessionMgr->objects[key]->_sLock.lock();
+
+	//그리고 또 랜덤이동 말고 걍 움직이는거 넣어줘야할까?
 
 			//길찾기 해서 npc x,y 넘겨준다.
 
-			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
+			//auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
 
-			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
-			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
-			lua_pcall(L, 1, 0, 0);
+			//lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
+			//lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
+			//lua_pcall(L, 1, 0, 0);
 
 
-			_sessionMgr->objects[key]->_sLock.unlock();
+			//_sessionMgr->objects[key]->_sLock.unlock();
 
 			delete exOver;
 			break;

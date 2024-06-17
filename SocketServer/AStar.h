@@ -15,29 +15,17 @@ struct PQNode {
 
 class AStar
 {
-	int startX;
-	int startY;
 
-	int destX;
-	int destY;
-
-
-	std::vector<std::vector<bool>> closed;
-
-	std::vector<std::vector<int>> best; 
-
-	std::map<std::pair<int, int>, std::pair<int, int>> parent;
-	std::priority_queue<PQNode, std::vector<PQNode>, std::greater<PQNode>> pq;
-	
+	int startX, startY, destX, destY;
 
 
 public:
 	AStar();
-	AStar(int x, int y, int searchRange);
-	
+	AStar(int startX, int startY, int destX, int destY);
 
-	void init(int x, int y, int searchRange);
-	void init(int x, int y, int desx, int desy);
+	void init(int startX, int startY, int destX, int destY);
+
+
 	void FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path);
-};
 
+};

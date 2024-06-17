@@ -5,6 +5,9 @@
 
 struct Pos { int x; int y; };
 
+const int AstaSize = 20;
+const int HalfAstaSize = 10;
+
 Pos front[] =
 {
 	Pos { -1, 0},	// UP
@@ -25,95 +28,87 @@ int cost[] =
 
 };
 
-
 AStar::AStar()
-	:closed(40, std::vector<bool>(40, false)),
-	best(40, std::vector<int>(40, INT32_MAX))
-
 {
 
 }
 
-AStar::AStar(int x, int y, int searchRange)
-	: startX(x), startY(y),destX(x+ searchRange),destY(y+ searchRange),
-	closed(searchRange, std::vector<bool>(searchRange, false)),
-	best(searchRange, std::vector<int>(searchRange, INT32_MAX))
+AStar::AStar(int startX, int startY, int destX, int destY)
+    : startX(startX), startY(startY), destX(destX), destY(destY)
 {
-	int g = 0;
-	int h = 10 * (abs(destY - startY) + abs(destX - startX));
-	pq.push(PQNode{ g + h, g, startX,startY });
-	best[0][0] = g + h;
-	//best[0][0] = g + h;
-	parent[{x, y}] = { x,y };
+    // 배열 크기를 충분히 크게 설정합니다. 예를 들어 40x40으로 설정합니다.
 
 }
-
-void AStar::init(int x, int y, int searchRange)
-{
-	startX = x;
-	startY = y;
-	destX = x + searchRange;
-	destY = y + searchRange;
-
-	int g = 0;
-	int h = 10 * (abs(destY - startY) + abs(destX - startX));
-	pq.push(PQNode{ g + h, g, startX,startY });
-
-	best[0][0] = g + h;
-	parent[{x, y}] = { x,y };
-
-}
-
-void AStar::init(int x, int y, int desx, int desy)
+void AStar::init(int x, int y, int destx, int desty)
 {
     startX = x;
     startY = y;
-    destX = desx;
-    destY = desy;
+
+
+    destX = destx;
+    destY = desty;
+
+
+
+}
+void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
+{
+
+    
+
+    std::vector<std::vector<bool>> closed(AstaSize, std::vector<bool>(AstaSize, false));
+    std::vector<std::vector<int>> best(AstaSize, std::vector<int>(AstaSize, INT32_MAX));
+    std::priority_queue<PQNode, std::vector<PQNode>, std::greater<PQNode>> pq;
+
+
+    std::map<std::pair<int, int>, std::pair<int, int>> parent;
 
     int g = 0;
     int h = 10 * (abs(destY - startY) + abs(destX - startX));
+
+
     pq.push(PQNode{ g + h, g, startX,startY });
+    best[HalfAstaSize][HalfAstaSize] = g + h;
 
-    best[0][0] = g + h;
-    parent[{x, y}] = { x,y };
+    parent[{startX, startY}] = { startX, startY }; 
 
-}
-
-void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
-{
-    while (false == pq.empty())
-    {
+    while (!pq.empty()) {
         PQNode node = pq.top();
         pq.pop();
 
-        int nodeXIdx = node.x - startX;
-        int nodeYIdx = node.y - startY;
+        int nodeXIdx = node.x - startX + HalfAstaSize;
+        int nodeYIdx = node.y - startY + HalfAstaSize;
 
-        if (closed[nodeYIdx][nodeXIdx])
+        if (nodeXIdx < 0 || nodeXIdx >= AstaSize || nodeYIdx < 0 || nodeYIdx >= AstaSize)
             continue;
-        if (best[nodeYIdx][nodeXIdx] < node.f)
+
+
+        // 이미 방문한 곳이면 스킵
+        if (closed[nodeYIdx][nodeXIdx])
             continue;
 
         closed[nodeYIdx][nodeXIdx] = true;
 
+        // 목적지에 도착하면 종료
         if (node.x == destX && node.y == destY) {
             break;
         }
 
-        // 대각선까지하려면 8
-        for (int dir = 0; dir < 4; dir++)
-        {
+        for (int dir = 0; dir < 4; dir++) {
             int nextX = node.x + front[dir].x;
             int nextY = node.y + front[dir].y;
 
+            int nextXIdx = nextX - startX + HalfAstaSize;
+            int nextYIdx = nextY - startY + HalfAstaSize;
 
-            if (false == mapMgr->IsCanGoCheck(nextX, nextY)) {
+            // 인덱스가 유효한 범위 내에 있는지 확인
+            if (nextXIdx < 0 || nextXIdx >= AstaSize || nextYIdx < 0 || nextYIdx >= AstaSize)
+                continue;
+
+            // 갈 수 있는 지역인지 확인
+            if (!mapMgr->IsCanGoCheck(nextX, nextY)) {
                 continue;
             }
-
-            int nextXIdx = nextX - startX;
-            int nextYIdx = nextY - startY;
 
             // 이미 방문한 곳이면 스킵
             if (closed[nextYIdx][nextXIdx]) {
@@ -138,9 +133,8 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 
     // 거꾸로 거슬러 올라간다
     std::pair<int, int> pos{ destX, destY };
-
-    while (true)
-    {
+    path->clear();
+    while (true) {
         path->push_back(pos);
 
         // 시작점은 자신이 곧 부모이다
@@ -152,4 +146,6 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
     }
 
     std::reverse(path->begin(), path->end());
+
+  
 }
