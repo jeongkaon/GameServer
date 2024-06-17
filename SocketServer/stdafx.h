@@ -15,7 +15,8 @@
 #include <concurrent_priority_queue.h>
 #include <queue>
 #include <map>
-
+#include <cmath>
+#include <utility>
 
 
 #include "include/lua.hpp"

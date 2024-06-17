@@ -10,7 +10,7 @@ Server* Server::instance = nullptr;
 
 Server::Server()
 {
-	//여기다가 뭘 넣어야할지를 모르겠음..
+
 }
 
 Server* Server::getInstance()
@@ -35,41 +35,6 @@ void Server::Init()
 
 	_packetMgr = new PacketManager();
 	_packetMgr->Init(_sessionMgr, _mapMgr, _dbConnPool);
-
-	//db테스트를 해보자
-	// Read
-	{
-		//struct로 넘기는 방법 생각해보자
-
-		DBConnection* dbConn = _dbConnPool->Pop();
-		// 기존에 바인딩 된 정보 날림
-		dbConn->Unbind();
-
-		char level[20];;
-		int hp;
-		SQLLEN len = 0;
-		SQLLEN len2 = 0;
-
-		// 넘길 인자 바인딩
-		dbConn->BindCol(1, level,20, &len);
-		dbConn->BindCol(2, &hp, &len2);
-
-		// SQL 실행
-		// //SELECT user_id FROM user_table WHERE user_id = 1"
-		//SQLExecDirect(hStmt, (SQLWCHAR*)L"SELECT * FROM game_server.dbo.[user_table];", SQL_NTS);
-		dbConn->Excute(L"SELECT user_level FROM game_server.dbo.[game_data_table]");
-
-		while (dbConn->Fetch())
-		{
-			cout << "name: " << level <<", level: "<<hp << endl;
-		}
-
-		//다썻으면 반납해야한다.
-
-		_dbConnPool->Push(dbConn);
-	}
-
-
 
 	_numThreads = std::thread::hardware_concurrency();
 
@@ -148,14 +113,7 @@ void Server::Timer()
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 			}
-			case EV_ACTIVE_MOVE:
-			{
-				ExpOver* ov = new ExpOver;
-				ov->_comp_type = OP_NPC_MOVE_ACTIVE;
-				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
-				break;
 
-			}
 			case EV_RECOVER_HP:
 			{
 				ExpOver* ov = new ExpOver;
@@ -257,10 +215,6 @@ void Server::Worker()
 		}
 		case OP_NPC_MOVE: {
 
-			//move type이 roaming인 애들만 움직인다.->애초에 fix인애들한테는 이거 안들어옴
-			//20x20에서 자유롭게 이동
-			//장애물은 a* 길찾기로 이동한다..->이걸해결해야함
-
 			bool keep_alive = false;
 
 			int col = _sessionMgr->objects[key]->_sectorCol;
@@ -300,27 +254,30 @@ void Server::Worker()
 
 		}
 		case OP_PLAYER_MOVE: {
+			//어그로 범위에 들어온 애가 여기로 들어온다.
 			_sessionMgr->objects[key]->_sLock.lock();
+
+			std::cout << "[" << key << "] 의 astar 이전 위치 x:" << _sessionMgr->objects[key]->_x << ", y:" <<
+				_sessionMgr->objects[key]->_y << std::endl;
+
+			static_cast<NPC*>(_sessionMgr->objects[key])->DoAstarMove(
+				_sessionMgr->objects[exOver->_ai_target_obj]->_x,
+				_sessionMgr->objects[exOver->_ai_target_obj]->_y);
+
+			std::cout << "[" << key << "] 의 astar 이후 위치 x:" << _sessionMgr->objects[key]->_x << ", y:" <<
+				_sessionMgr->objects[key]->_y << std::endl;
+
+
+			//길찾기 해서 npc x,y 넘겨준다.
 
 			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
 
 			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
-			//lua_getglobal(L, "event_move_to_player");			//이걸 호출해줘야한다.
 			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
 			lua_pcall(L, 1, 0, 0);
-			//lua_pop(L, 1);
-			_sessionMgr->objects[key]->_sLock.unlock();
 
-			delete exOver;
-			break;
-		}
-		case OP_NPC_MOVE_ACTIVE: {
-			//TODO. 수정할거 있ㅇ다. 여러번때리면 여러번 추가되서 이상해짐 개빨리 움직임
-			//이부분지워버릴까..
-			std::cout << key << "NPC 다시 움직임 활성화됨\n";
-			//static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_isMove = true;
-			//TimerEvent ev{ key, chrono::system_clock::now() + 3s, EV_RANDOM_MOVE, 0 };
-			//_timerQueue.push(ev);
+
+			_sessionMgr->objects[key]->_sLock.unlock();
 
 			delete exOver;
 			break;
@@ -375,45 +332,75 @@ int Server::LuaGetY(int id)
 
 void Server::WakeupNpc(int npc, int player)
 {
-	//움직임 타입이 고정이면 안움직이니까 고정하자.
-	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_moveType == MOVE_FIXED) return;
-	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active) return;
-
-	//어그로구현
-	// 1. x,y빼서 5안에 들어오면 11x11영역에 들어온거임
-	// -> 영역안에 들어왔으면 쫒아오게 해야한다.
-	// -> target_id 써서 루아쓰면될듯??
-	if (static_cast<NPC*>(_sessionMgr->objects[npc])->_monType == TYPE_AGRO) {
-		//타입어그로면 어쩌구저쩌구해야한다.
-		//어그로일때만 루아할까??
-
-	}
-	else {
-		//TODO. 이거 오버헤드가 엄청크다. 이 npc가 ai로 스크립트로 돌아가는건지 아닌지 flag을 둬
-		//고정인거는 위에서 걸렀다.
-		//이건 루아에서 해줄거 넣어주는거고 스크립트로 돌아가는것만 post해줘야한다->오버헤드가커서
-		ExpOver* exover = new ExpOver;
-		exover->_comp_type = OP_PLAYER_MOVE;
-		exover->_ai_target_obj = player;
-		PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
-
-	}
-
-
-
-	bool old_state = false;
-	if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
+	switch (_sessionMgr->objects[npc]->_visual)
+	{
+	case PEACE_FIXED:
 		return;
+	case PEACE_ROAMING:
+	{
+		bool old_state = false;
+		if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
+			return;
 
+		std::chrono::system_clock::time_point nowTime = chrono::system_clock::now();
 
-	std::chrono::system_clock::time_point nowTime = chrono::system_clock::now();
-	if (nowTime - static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime < 3ms) {
-		return;
+		if (nowTime - static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime < 3ms) {
+			return;
+		}
+		static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
+
+		TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
+		_timerQueue.push(ev);
+		break;
+
 	}
-	static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
+	case AGRO_FIXED:
+	{
+		if (_sessionMgr->NpcAgroActive(npc, player)) {
 
-	TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
-	_timerQueue.push(ev);
+			ExpOver* exover = new ExpOver;
+			exover->_comp_type = OP_PLAYER_MOVE;
+			exover->_ai_target_obj = player;
+			PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
+		}
+
+		break;
+	}
+	case AGRO_ROAMING:
+	{
+		//어그로 래인지에 들어왔는지 확인
+		if (_sessionMgr->NpcAgroActive(npc, player)) {
+
+
+		}
+		else {
+			//랜덤이동
+			bool old_state = false;
+			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
+				return;
+
+			std::chrono::system_clock::time_point nowTime = chrono::system_clock::now();
+
+			if (nowTime - static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime < 3ms) {
+				return;
+			}
+
+			//이게 문제가 아닌듯? 
+			static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
+
+			TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
+			_timerQueue.push(ev);
+
+		}
+
+		//랜덤이동
+		break;
+	}
+		
+	default:
+		break;
+	}
+
 
 }
 

@@ -42,6 +42,8 @@ public:
 	//npc관련
 	void NpcRandomMove(int id);
 	void NpcAstarMove(int id);
+	bool NpcAgroActive(int npc, int plyaer);
+	void SleepNPC(int id);
 
 	//공격관련
 	void AttackSessionToNPC(int id, char dir);

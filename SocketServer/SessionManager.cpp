@@ -53,7 +53,11 @@ void SessionManager::Init()
 		for (int j = 0; j < LIMIT_X; ++j) {
 			if (_npcInfo[i][j] == 0) continue;
 
-			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, _npcInfo[i][j]);
+			//테스트용
+			int vis = _npcInfo[i][j] + 10;
+			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
+			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, _npcInfo[i][j]);
+
 		}
 	}
 
@@ -63,8 +67,6 @@ void SessionManager::Init()
 
 int SessionManager::AcceptClient(SOCKET& socket)
 {
-	//player일때 해줘야함
-	
 	int id = RetNewClientId();
 	if (-1 != id) {
 		{
@@ -92,7 +94,6 @@ int SessionManager::RetNewClientId()
 
 	for (int i = 0; i < MAX_USER; ++i) {
 		std::lock_guard <std::mutex> ll{ objects[i]->_sLock };
-		//array니까 빈자리 찾아서 넣어주는거임.
 		if (objects[i]->_state == ST_FREE)
 			return i;
 	}
@@ -162,8 +163,6 @@ void SessionManager::LoginSession(int id)
 //	server->InputTimerEvent(ev);
 
 }
-
-
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 {
 
@@ -218,8 +217,6 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 			}
 		}
 		else {
-			//여기서 다르게해야하나?
-
 			server->WakeupNpc(objects[clientId]->_id, id);
 		}
 
@@ -250,6 +247,7 @@ bool SessionManager::CanSee(int from, int to)
 }
 void SessionManager::disconnect(int key)
 {
+	//TODO.로그아웃하면 db에 저장해야한다.
 	for (auto& pl : objects) {
 		{
 			lock_guard<mutex> ll(pl->_sLock);
@@ -258,6 +256,7 @@ void SessionManager::disconnect(int key)
 		if (pl->_id == key) continue;
 		pl->SendRemovePlayerPacket(key);
 	}
+
 
 	sector[objects[key]->_sectorCol][objects[key]->_sectorRow].EraseObjectInSector(key);
 	closesocket(static_cast<Session*>(objects[key])->_socket);
@@ -293,7 +292,6 @@ void SessionManager::NpcRandomMove(int id)
 	
 
 	static_cast<NPC*>(objects[id])->DoRandomMove();
-
 
 	Col = objects[id]->_sectorCol;
 	Row = objects[id]->_sectorRow;
@@ -366,7 +364,9 @@ void SessionManager::NpcAstarMove(int id)
 		}
 	}
 
-	static_cast<NPC*>(objects[id])->DoAstarMove();
+	//여기서 path를 찾자. 그래서 한개꺼내자. -
+	//TODO여기 생각해봐야한다.
+	static_cast<NPC*>(objects[id])->DoAstarMove(objects[id]->_x+10, objects[id]->_y+10);
 
 	Col = objects[id]->_sectorCol;
 	Row = objects[id]->_sectorRow;
@@ -415,6 +415,19 @@ void SessionManager::NpcAstarMove(int id)
 
 
 
+
+}
+bool SessionManager::NpcAgroActive(int npc, int plyaer)
+{
+	if (abs(objects[npc]->_x - objects[plyaer]->_x) >= AGRO_ACTIVE_RANGE) return false;
+	return abs(objects[npc]->_y - objects[plyaer]->_y) < AGRO_ACTIVE_RANGE;
+}
+
+void SessionManager::SleepNPC(int id)
+{
+	if (static_cast<NPC*>(objects[id])->_is_active == false) return;
+	bool oldState = true;
+	atomic_compare_exchange_strong(&static_cast<NPC*>(objects[id])->_is_active, &oldState, false);
 
 }
 void SessionManager::AttackSessionToNPC(int id, char dir)
@@ -556,11 +569,8 @@ void SessionManager::RespawnNPC(int npcId)
 			objects[npcId]->_x, objects[npcId]->_y, objects[npcId]->_visual);
 	}
 }
-
 void SessionManager::BroadcastChatting(int id, int len, void* chat )
 {
-	char* str = (char*)chat;
-
 	SC_CHAT_PACKET packet;
 	packet.size = len + 7;
 	packet.type = SC_CHAT;
@@ -573,13 +583,8 @@ void SessionManager::BroadcastChatting(int id, int len, void* chat )
 			lock_guard<mutex> ll(objects[i]->_sLock);
 			if (ST_INGAME != objects[i]->_state) continue;
 		}
-		std::cout << str << std::endl;
-
-		//보내자.
 		static_cast<Session*>(objects[i])->DoSend(&packet);
-		
 	}
-
 
 }
 

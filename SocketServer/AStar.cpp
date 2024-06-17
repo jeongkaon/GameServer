@@ -64,81 +64,92 @@ void AStar::init(int x, int y, int searchRange)
 
 }
 
+void AStar::init(int x, int y, int desx, int desy)
+{
+    startX = x;
+    startY = y;
+    destX = desx;
+    destY = desy;
+
+    int g = 0;
+    int h = 10 * (abs(destY - startY) + abs(destX - startX));
+    pq.push(PQNode{ g + h, g, startX,startY });
+
+    best[0][0] = g + h;
+    parent[{x, y}] = { x,y };
+
+}
+
 void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 {
-	while (false == pq.empty())
-	{
-		PQNode node = pq.top();
-		pq.pop();
+    while (false == pq.empty())
+    {
+        PQNode node = pq.top();
+        pq.pop();
 
-		if (closed[node.y - startY][node.x - startX])
-			continue;
-		if (best[node.y - startY][node.x - startX] < node.f)
-			continue;
+        int nodeXIdx = node.x - startX;
+        int nodeYIdx = node.y - startY;
 
-		closed[node.y - startY][node.x - startX] = true;
+        if (closed[nodeYIdx][nodeXIdx])
+            continue;
+        if (best[nodeYIdx][nodeXIdx] < node.f)
+            continue;
 
-		if (node.x == destX && node.y == destY) {
-			break;
-		}
+        closed[nodeYIdx][nodeXIdx] = true;
 
-		//대각선까지하려면 8
-		for (int dir = 0; dir < 4; dir++)
-		{
-			int nextX = node.x + front[dir].x;
-			int nextY = node.y + front[dir].y;
-			
-			// 갈 수 있는 지역은 맞는지 확인
-			if (nextX > startX + destX || nextX <startX ||
-				nextY >startY + destY || nextY < startY) continue;
+        if (node.x == destX && node.y == destY) {
+            break;
+        }
 
-			int moveX = nextX;
-			int moveY = nextY;
-		
-			if (false == mapMgr->IsCanGoCheck(dir, moveX, moveY)) {
-				continue;
-			}
-			nextX = moveX;
-			nextY = moveY;
-
-			// 이미 방문한 곳이면 스킵
-			if (closed[nextY-startY][nextX - startX]) {
-				continue;
-			}
-
-			// 비용 계산
-			int g = node.g + cost[dir];
-			int h = 10 * (abs(destY - nextY) + abs(destX - nextX));
-			// 다른 경로에서 더 빠른 길을 찾았으면 스킵
-			if (best[nextY - startY][nextX - startX] <= g + h)
-				continue;
-
-			// 예약 진행
-			best[nextY - startY][nextX - startX] = g + h;
-			pq.push(PQNode{ g + h, g, nextX,nextY });
-
-			parent[{nextX,nextY}] = {node.x,node.y};
-
-		}
-	}
+        // 대각선까지하려면 8
+        for (int dir = 0; dir < 4; dir++)
+        {
+            int nextX = node.x + front[dir].x;
+            int nextY = node.y + front[dir].y;
 
 
-	// 거꾸로 거슬러 올라간다
-	std::pair<int,int> pos{ destX,destY };
+            if (false == mapMgr->IsCanGoCheck(nextX, nextY)) {
+                continue;
+            }
 
-	while (true)
-	{
-		path->push_back(pos);
+            int nextXIdx = nextX - startX;
+            int nextYIdx = nextY - startY;
 
-		// 시작점은 자신이 곧 부모이다
-		if (pos == parent[pos]) {
-			break;
-		}
-	
+            // 이미 방문한 곳이면 스킵
+            if (closed[nextYIdx][nextXIdx]) {
+                continue;
+            }
 
-		pos = parent[pos];
-	}
+            // 비용 계산
+            int g = node.g + cost[dir];
+            int h = 10 * (abs(destY - nextY) + abs(destX - nextX));
 
-	std::reverse(path->begin(), path->end());
+            // 다른 경로에서 더 빠른 길을 찾았으면 스킵
+            if (best[nextYIdx][nextXIdx] <= g + h)
+                continue;
 
+            // 예약 진행
+            best[nextYIdx][nextXIdx] = g + h;
+            pq.push(PQNode{ g + h, g, nextX, nextY });
+
+            parent[{nextX, nextY}] = { node.x, node.y };
+        }
+    }
+
+    // 거꾸로 거슬러 올라간다
+    std::pair<int, int> pos{ destX, destY };
+
+    while (true)
+    {
+        path->push_back(pos);
+
+        // 시작점은 자신이 곧 부모이다
+        if (pos == parent[pos]) {
+            break;
+        }
+
+        pos = parent[pos];
+    }
+
+    std::reverse(path->begin(), path->end());
 }

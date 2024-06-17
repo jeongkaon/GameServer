@@ -182,7 +182,7 @@ public:
 			m_sprite.setPosition(rx, ry - 16);
 		}
 		else {
-			m_sprite.setPosition(rx, ry );
+			m_sprite.setPosition(rx, ry-3);
 
 		}
 
@@ -261,7 +261,8 @@ void ProcessPacket(char* ptr)
 		}
 		else if(id > 0 ){
 			int visual = my_packet->visual;
-			players[id] = OBJECT{ *slimes[visual-1], 0, 0, 64 * 3, 64 * 3,visual};
+			int idx = visual % 10 - 1;
+			players[id] = OBJECT{ *slimes[idx], 0, 0, 64 * 3, 64 * 3,visual};
 			players[id].spriteWidth = SPRITE_WIDTH;
 			players[id].spriteHeight = SPRITE_MON_HEIGHT;
 			players[id].visual = visual;
@@ -677,7 +678,6 @@ void GameWindow()
 
 	sf::Sprite backgroundSprite13;
 	backgroundSprite13.setTexture(*backgroundTexture13);
-	//backgroundSprite13.setPosition(500, 0);
 	backgroundSprite13.setPosition(backgroundTexture->getSize().x, 0);
 
 
@@ -687,20 +687,8 @@ void GameWindow()
 
 	// 채팅 관련 변수들
 	TextBox ChatInput(g_font, 0, WINDOW_HEIGHT-28, WINDOW_WIDTH*0.75,30);
-	// 채팅 관련 변수들
-	std::vector<sf::Text> chatMessages;
-	sf::Text chatInputText;
-	sf::String chatInputString;
-	std::vector<sf::RectangleShape> chatMessageBackgrounds;
 
-
-	sf::RectangleShape chatBackground;
-	sf::RectangleShape chatInputBackground;
-
-	// 채팅 배경 박스 설정
-	chatBackground.setSize(sf::Vector2f(WINDOW_WIDTH * 0.75, CHATBOX_HEIGHT));
-	chatBackground.setFillColor(sf::Color(0, 0, 0, 150)); // 반투명 검정색
-	updateChatBoxPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT/2, chatBackground, chatInputText);
+		// 채팅 배경 박스 설정
 	avatar.init(*Visuals[avatar.visual - 1], 0, 0, 64 * 4 / 2, 384 / 2, avatar.visual);
 
 	//뷰설정
@@ -885,8 +873,6 @@ void GameWindow()
 		g_window->draw(backgroundSprite);
 		g_window->draw(backgroundSprite13);
 
-		g_window->draw(chatInputBackground);
-		g_window->draw(chatBackground);
 		client_main();
 
 		ChatInput.ChangePosition(viewX, viewY);

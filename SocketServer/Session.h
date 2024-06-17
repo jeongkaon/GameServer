@@ -32,5 +32,7 @@ public:
 	void OnAttackSuccess(int type);
 	bool OnAttackReceived(int damage);
 
+	
+
 };
 

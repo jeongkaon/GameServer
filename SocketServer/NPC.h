@@ -10,6 +10,8 @@ class NPC :public Object
 	int _rangeX;
 	int _rangeY;
 
+	MapManager* _mapMgr;
+
 public:
 	std::atomic_bool	_is_active;		
 	lua_State* _L;
@@ -31,11 +33,10 @@ public:
 	NPC(int x, int y);
 
 	void init(MapManager* mgr, int x, int y, int visual);
-
-	void initRandomPath();
+	
 
 	void DoRandomMove();
-	void DoAstarMove();
+	void DoAstarMove(int desx, int desy);
 
 	void OnAttackSuccess(int visual);
 	bool OnAttackReceived(int damage);

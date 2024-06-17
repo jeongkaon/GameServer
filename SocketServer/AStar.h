@@ -34,9 +34,10 @@ class AStar
 public:
 	AStar();
 	AStar(int x, int y, int searchRange);
+	
 
 	void init(int x, int y, int searchRange);
-	
+	void init(int x, int y, int desx, int desy);
 	void FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path);
 };
 

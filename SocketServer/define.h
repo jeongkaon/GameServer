@@ -14,7 +14,7 @@ constexpr int LIMIT_Y = 1000;
 enum NpcType{MOVE_FIXED, MOVE_ROAMING, TYPE_AGRO, TYPE_PEACE};
 
 enum CompleteType { OP_ACCEPT, OP_RECV, OP_SEND, OP_NPC_MOVE, 
-	OP_PLAYER_MOVE, OP_NPC_MOVE_ACTIVE,OP_RECOVER_HP, OP_NPC_RESPAWN,
+	OP_PLAYER_MOVE, OP_RECOVER_HP, OP_NPC_RESPAWN,
 };
 enum SessionState { ST_FREE, ST_ALLOC, ST_INGAME };
 
@@ -48,10 +48,10 @@ struct GameData {
 	
 };
 
-struct TimerEvent {		//타이머
+struct TimerEvent {		
 	int obj_id;
 	std::chrono::system_clock::time_point wakeup_time;
-	EventType event_id;		//event종류->무엇을에 해당한다->EventType
+	EventType event_id;		
 	int target_id;
 
 

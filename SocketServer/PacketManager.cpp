@@ -58,7 +58,6 @@ void PacketManager::ProcessRecvPacket(int id, char* buf, int copySize)
 void PacketManager::ProcessRegistPacket(int id, char* buf, int copySize)
 {
 	CS_REGIST_PACKET* p = reinterpret_cast<CS_REGIST_PACKET*>(buf);
-	//db에 등록해야할거같은디??
 
 }
 
@@ -66,9 +65,6 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 {
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 	
-	
-	//초기화가 안되는거가튼디?
-	//GameData userData{ *p->name,1,0,100,INIT_X_POS,INIT_Y_POS,0 };
 	GameData userData;
 	strcpy_s(userData.user_name, p->name);
 	userData.user_exp = 0;
@@ -106,7 +102,6 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 {
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 
-	//랜덤으로 x,y넣어주기
 	
 	GameData userData;
 	strcpy_s(userData.user_name, p->name);
@@ -136,7 +131,6 @@ void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySiz
 	_sessionMgr->objects[id]->_visual = p->visual;
 	_sessionMgr->LoginSession(id);
 
-	//DB에 등록해야한다.
 	AddVisualInfoInDB(_sessionMgr->objects[id]->_name, p->visual);
 }
 
@@ -148,7 +142,6 @@ void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 	int x = _sessionMgr->objects[id]->_x;
 	int y = _sessionMgr->objects[id]->_y;
 
-	//TODO.지금테스트용은 150인데 나중에 2000으로 바꾸면 W_WIDTH로 바꿔야함
 	if (x >= LIMIT_X || x < 0 || y >= LIMIT_Y || y < 0) {
 		std::cout << "잘못된 접근" << std::endl;
 		return;

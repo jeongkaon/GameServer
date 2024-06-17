@@ -8,7 +8,6 @@
 
 int NPC::TotalNpcCount = 0;
 NPC::NPC()
-	
 {
 
 	sprintf_s(_name, "NPC%d", _id);
@@ -24,8 +23,8 @@ NPC::NPC(int x, int y)
 
 void NPC::init(MapManager* mgr, int x, int y, int visual)
 {
-	astar.init(x, y, 20); //astar길찾기 초기화시킴.
 
+	_mapMgr = mgr;
 	_id = MAX_USER + TotalNpcCount++;
 	_pathCount = 0;
 	_state = ST_INGAME;
@@ -73,10 +72,6 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 
 	_is_active = false;
 	
-	if (_moveType == MOVE_ROAMING) {
-		//astar.FindPath(mgr, &path);
-		//initRandomPath();
-	}
 
 	_sectorCol = _x / SECTOR_SIZE;
 	_sectorRow = _y / SECTOR_SIZE;
@@ -97,16 +92,12 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	lua_register(_L, "API_SendMessage", API_SendMessage);
 	lua_register(_L, "API_get_x", API_get_x);
 	lua_register(_L, "API_get_y", API_get_y);
+	lua_register(_L, "API_Active_Agro", API_Active_Agro);
+
 	lua_register(_L, "API_MoveTo", API_MoveTo);
 
 }
 
-void NPC::initRandomPath()
-{
-	//목적지까지 랜덤으로 길 찍는거임
-	
-
-}
 
 void NPC::DoRandomMove()
 {
@@ -160,17 +151,16 @@ void NPC::DoRandomMove()
 
 }
 
-void NPC::DoAstarMove()
+void NPC::DoAstarMove(int desx ,int desy)
 {
 
-	_x = path[_pathCount].first;
-	_y = path[_pathCount].second;
+	//패스를 찾아야한다.
+	astar.init(_x, _y, desx, desy);
+	astar.FindPath(_mapMgr, &path);
 
-	_pathCount += 1;
-	if (_pathCount == path.size()) {
-		//TODO. 고쳐야함
-		_pathCount = 0;
-	}
+	_x = path[0].first;
+	_y = path[0].second;
+
 
 	int preCol = _sectorCol;
 	int preRow = _sectorRow;

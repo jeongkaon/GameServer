@@ -11,7 +11,8 @@ constexpr int MAX_NPC = 200000;
 constexpr int W_WIDTH = 2000;
 constexpr int W_HEIGHT = 2000;
 
-constexpr int VIEW_RANGE = 5;
+constexpr int VIEW_RANGE = 7;
+constexpr int AGRO_ACTIVE_RANGE = 5;
 
 
 // Packet ID
@@ -46,10 +47,10 @@ constexpr int NOT_EXIST_IN_DB = 2005;
 constexpr int NOT_CHOICE_CHARACTER = 2006;
 
 //MonsterType
-constexpr int PEACE_FIXED = 1;
-constexpr int PEACE_ROAMING = 2;
-constexpr int AGRO_FIXED = 3;
-constexpr int AGRO_ROAMING = 4;
+constexpr int PEACE_FIXED = 11;		//빨간색
+constexpr int PEACE_ROAMING = 12;	//노란색
+constexpr int AGRO_FIXED = 13;		//초록색
+constexpr int AGRO_ROAMING = 14;		//파란색
 
 //
 
