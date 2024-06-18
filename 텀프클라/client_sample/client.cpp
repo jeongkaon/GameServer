@@ -453,21 +453,21 @@ void SelectCharacterWindow(sf::RenderWindow& window1, bool& isWindow1Closed)
 						switch (button._buttonNumber)
 						{
 						case 1:
-							std::cout << "Character Selected Aurora" << std::endl;
+							//std::cout << "Character Selected Aurora" << std::endl;
 							avatar.visual = 1;
 							packet.visual = 1;
 							send_packet(&packet);
 
 							break;
 						case 2:
-							std::cout << "Character Selected Moon" << std::endl;
+							//std::cout << "Character Selected Moon" << std::endl;
 							avatar.visual = 2;
 							packet.visual = 2;
 							send_packet(&packet);
 
 							break;
 						case 3:
-							std::cout << "Character Selected Aladin" << std::endl;
+							//std::cout << "Character Selected Aladin" << std::endl;
 							avatar.visual = 3;
 							packet.visual = 3;
 							send_packet(&packet);
@@ -475,7 +475,8 @@ void SelectCharacterWindow(sf::RenderWindow& window1, bool& isWindow1Closed)
 
 							break;
 						case 4:
-							std::cout << "Character Selected Cinderella" << std::endl;
+							//
+							// std::cout << "Character Selected Cinderella" << std::endl;
 							avatar.visual = 4;
 							packet.visual = 4;
 							send_packet(&packet);
@@ -612,7 +613,8 @@ void LoginWindow(sf::RenderWindow& window1, bool& isLoginWindow1Closed)
 				}
 				else if (event.text.unicode == '\r') { // 엔터 처리
 					// 엔터 입력 시 동작
-					std::cout << "User Input: " << activeTextBox->getText() << std::endl;
+					
+					//std::cout << "User Input: " << activeTextBox->getText() << std::endl;
 					activeTextBox = &InputPW;
 					InputPW.setActive(true);
 					InputId.setActive(false);
@@ -723,7 +725,7 @@ void GameWindow()
 					}
 					else if (event.text.unicode == '\r') { // 엔터 처리
 						// 엔터 입력 시 동작
-						std::cout << "User Input: " << ChatInput.getText() << std::endl;
+						//std::cout << "User Input: " << ChatInput.getText() << std::endl;
 						string chatting = "[";
 						chatting += avatar.name;
 						chatting += "] ";
@@ -821,7 +823,7 @@ void GameWindow()
 				case sf::Keyboard::A:
 				{
 					if (ChatInput.isActive == true) break;
-					std::cout << "공격키 누름\n";
+					//std::cout << "공격키 누름\n";
 					//이벡트나 터뜨리자.
 					CS_ATTACK_PACKET p;
 					p.size = sizeof(p);
@@ -887,8 +889,8 @@ int main()
 	for (int i = 0; i < 4; ++i) {
 		Visuals[i] = new sf::Texture;
 	}
-	Visuals[0]->loadFromFile("charType1.png");
-	Visuals[1]->loadFromFile("charType2.png");
+	Visuals[0]->loadFromFile("charType2.png");
+	Visuals[1]->loadFromFile("charType1.png");
 	Visuals[2]->loadFromFile("charType3.png");
 	Visuals[3]->loadFromFile("charType4.png");
 

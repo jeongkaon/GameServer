@@ -411,7 +411,6 @@ void Server::WakeupNpc(int npc, int player)
 				return;
 			}
 
-			//이게 문제가 아닌듯? 
 			static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
 
 
@@ -421,7 +420,6 @@ void Server::WakeupNpc(int npc, int player)
 
 		}
 
-		//랜덤이동
 		break;
 	}
 		

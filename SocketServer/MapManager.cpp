@@ -11,10 +11,7 @@ MapManager::MapManager()
 
 void MapManager::InitMapInfo()
 {
-	//파일을 읽어와서 맵데이터를 저장한다.
 	ifstream in{ "collision.txt",ios::binary};
-	
-
 	int temp;
 
 	int i = 0;
