@@ -113,7 +113,14 @@ void Server::Timer()
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 			}
-
+			case EV_AGRO_MOVE:
+			{
+				ExpOver* ov = new ExpOver;
+				ov->_comp_type = OP_NPC_AGRO_MOVE;
+				ov->_ai_target_obj = ev.target_id;
+				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
+				break;
+			}
 			case EV_RECOVER_HP:
 			{
 				ExpOver* ov = new ExpOver;
@@ -241,7 +248,6 @@ void Server::Worker()
 				if (static_cast<NPC*>(_sessionMgr->objects[static_cast<int>(key)])->_moveType == MOVE_FIXED) break;
 
 				_sessionMgr->NpcRandomMove(static_cast<int>(key));
-				//_sessionMgr->NpcAstarMove(static_cast<int>(key));
 
 				TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_RANDOM_MOVE, 0 };
 				_timerQueue.push(ev);
@@ -254,41 +260,22 @@ void Server::Worker()
 
 		}
 		case OP_PLAYER_MOVE: {
-			//어그로 범위에 들어온 애가 여기로 들어온다.
-			std::cout << "[" << key << "] 의 astar 이전 위치 x:" << _sessionMgr->objects[key]->_x << ", y:" <<
-				_sessionMgr->objects[key]->_y << std::endl;
 
-			_sessionMgr->NpcAstarMove(key, exOver->_ai_target_obj);
+			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
 
-			std::cout << "[" << key << "] 의 astar 이후 위치 x:" << _sessionMgr->objects[key]->_x << ", y:" <<
-				_sessionMgr->objects[key]->_y << std::endl << std::endl;
-
-			//_sessionMgr->objects[key]->_sLock.lock();
-
-	//그리고 또 랜덤이동 말고 걍 움직이는거 넣어줘야할까?
-
-			//길찾기 해서 npc x,y 넘겨준다.
-
-			//auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
-
-			//lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
-			//lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
-			//lua_pcall(L, 1, 0, 0);
+			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
+			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
+			lua_pcall(L, 1, 0, 0);
 
 
-			//_sessionMgr->objects[key]->_sLock.unlock();
+			_sessionMgr->objects[key]->_sLock.unlock();
 
 			delete exOver;
 			break;
 		}
 		case OP_RECOVER_HP:
 		{
-			//std::cout << key << "PLAYER의 체력 10%회복되는 타이머발동~\n";
-
-			//TODO. max체력 안넘게 수정해야한다.
-			//일단 현재의 hp의 10프로 회복하는거로함 
-
-			//hp가 max일때도 나가야할텐디..?
+	
 			if (_sessionMgr->objects[static_cast<int>(key)]->_state != ST_INGAME)
 			{
 				return;
@@ -312,6 +299,19 @@ void Server::Worker()
 			delete exOver;
 			break;
 
+		}
+		case OP_NPC_AGRO_MOVE:
+		{
+
+
+			_sessionMgr->NpcAstarMove(key, exOver->_ai_target_obj);
+
+			TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_AGRO_MOVE, exOver->_ai_target_obj };
+			_timerQueue.push(ev);
+
+
+			delete exOver;
+			break;
 		}
 		}
 
@@ -355,10 +355,13 @@ void Server::WakeupNpc(int npc, int player)
 	}
 	case AGRO_FIXED:
 	{
-		if (_sessionMgr->NpcAgroActive(npc, player)) {
+		if (_sessionMgr->NpcAgroActive(npc, player) && static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro==false) {
+			bool old_state = false;
+			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro, &old_state, true))
+				return;
 
 			ExpOver* exover = new ExpOver;
-			exover->_comp_type = OP_PLAYER_MOVE;
+			exover->_comp_type = OP_NPC_AGRO_MOVE;
 			exover->_ai_target_obj = player;
 			PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
 		}
@@ -370,6 +373,14 @@ void Server::WakeupNpc(int npc, int player)
 		//어그로 래인지에 들어왔는지 확인
 		if (_sessionMgr->NpcAgroActive(npc, player)) {
 
+			bool old_state = false;
+			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro, &old_state, true))
+				return;
+
+			ExpOver* exover = new ExpOver;
+			exover->_comp_type = OP_NPC_AGRO_MOVE;
+			exover->_ai_target_obj = player;
+			PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
 
 		}
 		else {

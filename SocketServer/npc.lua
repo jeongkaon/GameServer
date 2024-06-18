@@ -17,6 +17,7 @@ function event_player_move(player)
    if math.abs(player_x - my_x) <= 1 and math.abs(player_y - my_y) <= 1 then
       API_SendMessage(myid, player, "ATTACK")
    end
+
   
 end
 

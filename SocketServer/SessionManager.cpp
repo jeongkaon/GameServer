@@ -341,6 +341,7 @@ void SessionManager::NpcRandomMove(int id)
 void SessionManager::NpcAstarMove(int id, int target)
 {
 
+
 	int Col = objects[id]->_sectorCol;
 	int Row = objects[id]->_sectorRow;
 
@@ -364,8 +365,7 @@ void SessionManager::NpcAstarMove(int id, int target)
 		}
 	}
 
-	//여기서 path를 찾자. 그래서 한개꺼내자. -
-	//TODO여기 생각해봐야한다.
+
 	static_cast<NPC*>(objects[id])->DoAstarMove(objects[target]->_x,objects[target]->_y);
 
 	Col = objects[id]->_sectorCol;

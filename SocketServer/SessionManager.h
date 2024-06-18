@@ -31,7 +31,6 @@ public:
 	
 
 	int CheckLoginSession(int id);		//TODO. 기존에접속중인지 확인해야함
-	//GameData인자로 받아서 그거로 로긴하는거임
 	void LoginSession(int id);
 
 	void MoveSession(int id, CS_MOVE_PACKET* packet);

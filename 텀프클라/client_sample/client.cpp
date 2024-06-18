@@ -128,9 +128,6 @@ public:
 
 	void move(int x, int y) {
 
-
-		//여기서 좌표를 바꾸고, 지금은 픽셀단위로 움직이게 두고
-		//리팩토링할때 프레임단위로 바꾸게하자
 		m_x = x;
 		m_y = y;
 
@@ -403,8 +400,8 @@ void client_main()
 	avatar.draw();
 
 	//디버깅박스를 그린다
-	debugBox.setPosition((avatar.m_x- VIEW_RANGE )* TILE_WIDTH , (avatar.m_y- VIEW_RANGE)* TILE_WIDTH);
-	g_window->draw(debugBox);
+	//debugBox.setPosition((avatar.m_x- VIEW_RANGE )* TILE_WIDTH , (avatar.m_y- VIEW_RANGE)* TILE_WIDTH);
+	//g_window->draw(debugBox);
 
 
 	//아이디를 그린다.
@@ -667,9 +664,9 @@ void GameWindow()
 {
 	//디버깅용박스
 	// 디버깅 박스 설정
-	debugBox.setFillColor(sf::Color::Transparent); // 투명한 채우기 색
-	debugBox.setOutlineColor(sf::Color::Red); // 빨간색 테두리
-	debugBox.setOutlineThickness(2); // 테두리 두께 설정
+	//debugBox.setFillColor(sf::Color::Transparent); // 투명한 채우기 색
+	//debugBox.setOutlineColor(sf::Color::Red); // 빨간색 테두리
+	//debugBox.setOutlineThickness(2); // 테두리 두께 설정
 
 
 	// 스프라이트 생성 및 텍스처 설정

@@ -14,6 +14,8 @@ class NPC :public Object
 
 public:
 	std::atomic_bool	_is_active;		
+	std::atomic_bool	_is_agro;
+
 	lua_State* _L;
 
 	int _moveType;

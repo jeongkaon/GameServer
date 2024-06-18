@@ -31,7 +31,6 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	//NPC는 일단 10이로 하기
 	//타입별로 달라야하나??
 	_damage = 10;
-
 	_x = x;
 	_y = y;
 	_rangeX = x + 20;
@@ -71,7 +70,8 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	}
 
 	_is_active = false;
-	
+	_is_agro = false;
+
 
 	_sectorCol = _x / SECTOR_SIZE;
 	_sectorRow = _y / SECTOR_SIZE;
@@ -153,6 +153,8 @@ void NPC::DoRandomMove()
 
 void NPC::DoAstarMove(int desx ,int desy)
 {
+
+	
 
 	//패스를 찾아야한다.
 	astar.init(_x, _y, desx, desy);
