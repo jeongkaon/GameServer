@@ -11,14 +11,9 @@ function event_player_move(player)
    my_x = API_get_x(myid)
    my_y = API_get_y(myid)
 
-
-   -- x와 y 좌표만약 1이면 공격하는 메시지 보내기
-   -- 이미 어그로 범위로 들어온애들임. 
    if math.abs(player_x - my_x) <= 1 and math.abs(player_y - my_y) <= 1 then
       API_SendMessage(myid, player, "ATTACK")
    end
-
-  
 end
 
 

@@ -46,7 +46,6 @@ int API_SendMessage(lua_State* L)
 	int user_id = (int)lua_tointeger(L, -2);
 	char* mess = (char*)lua_tostring(L, -1);
 	std::cout << mess << std::endl;
-	std::cout << "시발 불렷냐고요" << std::endl;
 
 	lua_pop(L, 4);
 	//clients[user_id].send_chat_packet(my_id, mess);

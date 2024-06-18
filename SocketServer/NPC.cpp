@@ -153,9 +153,7 @@ void NPC::DoRandomMove()
 
 void NPC::DoAstarMove(int desx ,int desy)
 {
-
 	
-
 	//패스를 찾아야한다.
 	astar.init(_x, _y, desx, desy);
 	astar.FindPath(_mapMgr, &path);
@@ -197,14 +195,12 @@ bool NPC::OnAttackReceived(int damage)
 {
 
 	//일단 10을 줄이자.
-	std::cout << _id << "의 npc가 공격을 당해서 " << _hp << "에서 ";
 
 	_hp -= damage;
-	std::cout << _hp << "가 되었다" << std::endl;
 
 
 	if (_hp <= 0) {
-		std::cout << _id <<" 몬스터는 죽었다." << std::endl;
+		std::cout << _id <<" 몬스터는 죽음" << std::endl;
 		
 		SessionManager::sector[_sectorCol][_sectorRow].EraseObjectInSector(_id);
 

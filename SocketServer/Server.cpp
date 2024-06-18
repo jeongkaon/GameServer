@@ -222,6 +222,7 @@ void Server::Worker()
 		}
 		case OP_NPC_MOVE: {
 
+			if (static_cast<NPC*>(_sessionMgr->objects[key])->_is_agro) return;
 			bool keep_alive = false;
 
 			int col = _sessionMgr->objects[key]->_sectorCol;
@@ -262,6 +263,8 @@ void Server::Worker()
 		case OP_PLAYER_MOVE: {
 
 			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
+
+			_sessionMgr->objects[key]->_sLock.lock();
 
 			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
 			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
@@ -306,8 +309,20 @@ void Server::Worker()
 
 			_sessionMgr->NpcAstarMove(key, exOver->_ai_target_obj);
 
+	
+			_sessionMgr->objects[key]->_sLock.lock();
+
+			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
+
+			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
+			lua_pushnumber(L, exOver->_ai_target_obj);		//ai_target_obj가 호출했다.
+			lua_pcall(L, 1, 0, 0);
+
+
+			_sessionMgr->objects[key]->_sLock.unlock();
 			TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_AGRO_MOVE, exOver->_ai_target_obj };
 			_timerQueue.push(ev);
+
 
 
 			delete exOver;
@@ -384,6 +399,7 @@ void Server::WakeupNpc(int npc, int player)
 
 		}
 		else {
+
 			//랜덤이동
 			bool old_state = false;
 			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
@@ -398,6 +414,8 @@ void Server::WakeupNpc(int npc, int player)
 			//이게 문제가 아닌듯? 
 			static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
 
+
+
 			TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
 			_timerQueue.push(ev);
 
@@ -410,6 +428,7 @@ void Server::WakeupNpc(int npc, int player)
 	default:
 		break;
 	}
+
 
 
 }

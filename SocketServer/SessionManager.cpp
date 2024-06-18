@@ -419,6 +419,10 @@ void SessionManager::NpcAstarMove(int id, int target)
 }
 bool SessionManager::NpcAgroActive(int npc, int plyaer)
 {
+	if(objects[npc]->_x > static_cast<NPC*>(objects[npc])->_rangeX) return false;
+	if (objects[npc]->_y > static_cast<NPC*>(objects[npc])->_rangeY) return false;
+
+
 	if (abs(objects[npc]->_x - objects[plyaer]->_x) >= AGRO_ACTIVE_RANGE) return false;
 	return abs(objects[npc]->_y - objects[plyaer]->_y) < AGRO_ACTIVE_RANGE;
 }

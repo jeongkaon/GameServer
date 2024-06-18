@@ -264,7 +264,7 @@ void ProcessPacket(char* ptr)
 			players[id].spriteHeight = SPRITE_MON_HEIGHT;
 			players[id].visual = visual;
 			players[id].move(my_packet->x, my_packet->y);
-			players[id].set_name(my_packet->name);
+			//players[id].set_name(my_packet->name);
 			players[id].show();
 
 		}

@@ -7,14 +7,14 @@ class MapManager;
 class NPC :public Object
 {
 
-	int _rangeX;
-	int _rangeY;
-
 	MapManager* _mapMgr;
 
 public:
 	std::atomic_bool	_is_active;		
 	std::atomic_bool	_is_agro;
+	int _rangeX;
+	int _rangeY;
+
 
 	lua_State* _L;
 
