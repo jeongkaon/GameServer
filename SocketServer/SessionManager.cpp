@@ -12,7 +12,6 @@ SessionManager::SessionManager()
 	std::cout << "herel!" << std::endl;
 	server = Server::getInstance();
 
-	//npc이니셜라이즈하기
 	for (int i = 0; i < MAX_USER; ++i) {
 		objects[i] = new Session();
 	}
@@ -53,10 +52,8 @@ void SessionManager::Init()
 		for (int j = 0; j < LIMIT_X; ++j) {
 			if (_npcInfo[i][j] == 0) continue;
 
-			//테스트용
 			int vis = _npcInfo[i][j] + 10;
 			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
-			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, _npcInfo[i][j]);
 
 		}
 	}
@@ -101,11 +98,8 @@ int SessionManager::RetNewClientId()
 }
 
 
-//로그인요청 들어온거 체크해야한다.
 int SessionManager::CheckLoginSession(int id)
 {
-	//error종류를 리턴해야한다.
-
 	return LOGIN_OK;
 }
 
@@ -158,9 +152,6 @@ void SessionManager::LoginSession(int id)
 		}
 	}
 
-	//TODO.여기를 고민해야함 -> 회복하는거를 언제부터 해야할지를 생각해봐야한다
-//	TimerEvent* ev = new TimerEvent{ id,  std::chrono::system_clock::now() + 1s ,EV_RECOVER_HP,0 };
-//	server->InputTimerEvent(ev);
 
 }
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
@@ -180,7 +171,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 		sector[preCol][preRow].EraseObjectInSector(objects[id]->_id);
 		sector[curCol][curRow].InsertObjectInSector(objects[id]->_id);
 	}
-
+	
 	objects[id]->_vl.lock();
 	unordered_set<int> old_vlist = objects[id]->_viewList;
 	objects[id]->_vl.unlock();
@@ -203,34 +194,34 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 
 	objects[id]->SendMovePacket(dir);
 
-	for (int clientId : new_viewlist) {
-		if (clientId < MAX_USER) {
-			objects[clientId]->_vl.lock();
-			if (objects[clientId]->_viewList.count(id)) {
-				objects[clientId]->_vl.unlock();
-				objects[clientId]->SendMovePacket(id, x, y, objects[id]->last_move_time,dir);
+	for (int objId : new_viewlist) {
+		if (objId < MAX_USER) {
+			objects[objId]->_vl.lock();
+			if (objects[objId]->_viewList.count(id)) {
+				objects[objId]->_vl.unlock();
+				objects[objId]->SendMovePacket(id, x, y, objects[id]->last_move_time,dir);
 			}
 			else {
-				objects[clientId]->_vl.unlock();
-				objects[clientId]->SendAddPlayerPacket(id, objects[id]->_name, 
+				objects[objId]->_vl.unlock();
+				objects[objId]->SendAddPlayerPacket(id, objects[id]->_name, 
 					objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 			}
 		}
 		else {
-			server->WakeupNpc(objects[clientId]->_id, id);
+			server->WakeupNpc(objects[objId]->_id, id);
 		}
 
-		if (old_vlist.count(clientId) == 0) {
-			objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
-				objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
+		if (old_vlist.count(objId) == 0) {
+			objects[id]->SendAddPlayerPacket(objId, objects[objId]->_name,
+				objects[objId]->_x, objects[objId]->_y, objects[objId]->_visual);
 		}
 	}
 
 
-	for (int clientId : old_vlist) {
-		if (0 == new_viewlist.count(clientId)) {
-			objects[id]->SendRemovePlayerPacket(clientId);
-			if (clientId < MAX_USER) objects[clientId]->SendRemovePlayerPacket(id);
+	for (int objId : old_vlist) {
+		if (0 == new_viewlist.count(objId)) {
+			objects[id]->SendRemovePlayerPacket(objId);
+			if (objId < MAX_USER) objects[objId]->SendRemovePlayerPacket(id);
 		}
 	}
 
@@ -247,7 +238,6 @@ bool SessionManager::CanSee(int from, int to)
 }
 void SessionManager::disconnect(int key)
 {
-	//TODO.로그아웃하면 db에 저장해야한다.
 	for (auto& pl : objects) {
 		{
 			lock_guard<mutex> ll(pl->_sLock);

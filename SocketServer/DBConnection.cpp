@@ -54,8 +54,6 @@ void DBConnection::clear()
 
 }
 
-//이 함수가 굉장히 중요한 함수이다.
-//쿼리를 인자로 받으면 실행하는 함수이다.
 bool DBConnection::Excute(const WCHAR* query)
 {
 	SQLRETURN ret = ::SQLExecDirect(_statement, (SQLWCHAR*)query, SQL_NTSL);
@@ -67,11 +65,9 @@ bool DBConnection::Excute(const WCHAR* query)
 
 }
 
-//데이터를 긁어올때 사용하는 함수
 bool DBConnection::Fetch()
 {
-	//결과를 받아오는것과 관련된 함수
-	//ret가 성공이면 받아올 데이터가 있다는 뜻이다
+	
 	SQLRETURN ret = ::SQLFetch(_statement);
 
 
@@ -83,7 +79,6 @@ bool DBConnection::Fetch()
 	case SQL_NO_DATA:
 		return false;
 	case SQL_ERROR:
-		//요청한거에 대해 잘못된 결과가 발생했을때임
 		HandleError(ret);
 		return false;
 	default:
@@ -94,9 +89,7 @@ bool DBConnection::Fetch()
 
 int DBConnection::GetRowCount()
 {
-	//데이터가 몇개 있는지를 반환하는 함수
 	SQLLEN count = 0;
-	//_statement는 인자를 넘길때도 쓸 수 있지만 거꾸로 긁어온 결과물들을 저장할때도 사용한다
 	SQLRETURN ret = ::SQLRowCount(_statement, OUT &count);
 
 	if (ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
@@ -107,7 +100,7 @@ int DBConnection::GetRowCount()
 
 void DBConnection::Unbind()
 {
-	//인자를 받아오거나 넘겨주기 전에 기존에 저장되어있는 값을 한번 날려주는거임
+	
 	::SQLFreeStmt(_statement, SQL_UNBIND);
 	::SQLFreeStmt(_statement, SQL_RESET_PARAMS);
 	::SQLFreeStmt(_statement, SQL_CLOSE);
@@ -116,11 +109,6 @@ void DBConnection::Unbind()
 
 bool DBConnection::BindParameter(SQLUSMALLINT paramIdx, SQLSMALLINT cType, SQLSMALLINT sqlType, SQLULEN len, SQLPOINTER ptr, SQLLEN* index)
 {
-	//인자를 넘겨주기
-
-	//SQLBindParameter
-	//이 함수에서 _statement를 통해서 몇번째 인자paramIdx를 무엇cType으로 우리sqlType가 세팅하고싶은지를 채워주는거임
-	//실질적으로 데이터가 있는 ptr을 넘기는거임.
 	SQLRETURN ret = ::SQLBindParameter(_statement, paramIdx, SQL_PARAM_INPUT, cType, sqlType, len, 0, ptr, 0, index);
 	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
 	{
@@ -133,9 +121,6 @@ bool DBConnection::BindParameter(SQLUSMALLINT paramIdx, SQLSMALLINT cType, SQLSM
 
 bool DBConnection::BindCol(SQLUSMALLINT colummIdx, SQLSMALLINT cType, SQLULEN len, SQLPOINTER value, SQLLEN* index)
 {
-	//인자를 받아오기
-
-	//환경핸들을 넘겨주고 순차적으로 건네준다
 	SQLRETURN ret = ::SQLBindCol(_statement, colummIdx, cType, value, len, index);
 	if (ret != SQL_SUCCESS && ret != SQL_SUCCESS_WITH_INFO)
 	{
@@ -148,12 +133,10 @@ bool DBConnection::BindCol(SQLUSMALLINT colummIdx, SQLSMALLINT cType, SQLULEN le
 
 void DBConnection::HandleError(SQLRETURN ret)
 {
-	//이 함수는 ret를 보고 에러를 출력하는 코드부분이 반복적으로 등장하기때문에 따로 뺀 함수임
 
 	if (ret == SQL_SUCCESS)
 		return;
 
-	//다 받아주는 인자들임, 외울필요없고 한번만 적어주면되는거임
 	SQLSMALLINT index = 1;
 	SQLWCHAR sqlState[MAX_PATH] = { 0 };
 	SQLINTEGER nativeErr = 0;
@@ -163,7 +146,6 @@ void DBConnection::HandleError(SQLRETURN ret)
 
 	while (true)
 	{
-		//정확한 에러메시지를 추출해준다.
 		errorRet = ::SQLGetDiagRecW(
 			SQL_HANDLE_STMT,
 			_statement,
@@ -181,9 +163,6 @@ void DBConnection::HandleError(SQLRETURN ret)
 		if (errorRet != SQL_SUCCESS && errorRet != SQL_SUCCESS_WITH_INFO)
 			break;
 
-		// TODO : Log
-		//실제 라이브에서는 콘솔은 개발단계에서만 체크하는거임
-		//라이브러리 이용해서 file로 log추출한다.
 		std::wcout.imbue(std::locale("kor"));
 		std::wcout << errMsg << std::endl;
 

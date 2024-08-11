@@ -3,7 +3,7 @@
 class ExpOver
 {
 public:
-	WSAOVERLAPPED _over;			//맨위에 놔야 얘가 클래스 주소가된다.
+	WSAOVERLAPPED _over;		
 	WSABUF _wsabuf;
 
 	char _send_buf[BUF_SIZE];

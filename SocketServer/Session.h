@@ -8,7 +8,7 @@ class Session : public Object
 	public:
 	SOCKET		_socket;
 
-	int		_prevRemain;		//이건 패킷재조립할때 사용한다.
+	int		_prevRemain;		
 	
 	int _exp;
 	int _level;

@@ -48,7 +48,6 @@ int API_SendMessage(lua_State* L)
 	std::cout << mess << std::endl;
 
 	lua_pop(L, 4);
-	//clients[user_id].send_chat_packet(my_id, mess);
 	return 0;
 }
 

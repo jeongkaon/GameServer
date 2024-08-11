@@ -19,7 +19,6 @@ private:
     SOCKET _serverSocket;
     SOCKET _clientSocket;
 
-    // 서버
     HANDLE _iocp;
 
     WSADATA WSAData;
@@ -27,7 +26,6 @@ private:
     SOCKADDR_IN cl_addr;
     int addr_size;
 
-    // 나중에 유니크포인터 사용하는거로 바꿔도될듯?
     SessionManager* _sessionMgr;
     PacketManager* _packetMgr;
     DBConnectionPool* _dbConnPool;
@@ -43,7 +41,6 @@ private:
 
 public:
     ~Server();
-    //일단 여기로옮김
     MapManager* _mapMgr;
 
     static Server* getInstance();

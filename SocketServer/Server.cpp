@@ -25,10 +25,9 @@ void Server::Init()
 {
 	_mapMgr = new MapManager();
 	_mapMgr->InitMapInfo();
-	//_mapMgr->InitNpcInfo();
 
 	_sessionMgr = new SessionManager();
-	_sessionMgr->Init();		//npc 정보를 받아야한다.
+	_sessionMgr->Init();		
 
 	_dbConnPool = new DBConnectionPool();
 	_dbConnPool->Connect(10, L"2024_TF_GS");
@@ -42,7 +41,6 @@ void Server::Init()
 
 void Server::Start()
 {
-
 	WSAStartup(MAKEWORD(2, 2), &WSAData);
 	_serverSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 
@@ -63,7 +61,6 @@ void Server::Start()
 	a_over._comp_type = OP_ACCEPT;
 	AcceptEx(_serverSocket, _clientSocket, a_over._send_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
 
-	//타이머스레드 생성
 	_timerThread = std::thread(&Server::Timer, this);
 
 	for (int i = 0; i < _numThreads; ++i)
@@ -94,14 +91,13 @@ void Server::Timer()
 {
 	while (true) {
 
-		TimerEvent ev;		//그 구조체임 어디서 선언할지를 모르겟음..
+		TimerEvent ev;	
 		auto current_time = chrono::system_clock::now();
 		if (true == _timerQueue.try_pop(ev)) {
-			//top으로 엿보기로 바꾸자.
 			if (ev.wakeup_time > current_time) {
-				_timerQueue.push(ev);		// 최적화 필요
-												// timer_queue에 다시 넣지 않고 처리해야 한다.
-				this_thread::sleep_for(1ms);  // 실행시간이 아직 안되었으므로 잠시 대기
+				_timerQueue.push(ev);		
+											
+				this_thread::sleep_for(1ms);
 				continue;
 			}
 			switch (ev.event_id) 
@@ -139,9 +135,9 @@ void Server::Timer()
 			}
 			}
 		
-			continue;		// 즉시 다음 작업 꺼내기
+			continue;		
 		}
-		this_thread::sleep_for(1ms);   // timer_queue가 비어 있으니 잠시 기다렸다가 다시 시작
+		this_thread::sleep_for(1ms);  
 	}
 
 }
@@ -170,6 +166,8 @@ void Server::Worker()
 			if (exOver->_comp_type == OP_SEND) delete exOver;
 			continue;
 		}
+
+
 		switch (exOver->_comp_type) {
 
 		case OP_ACCEPT: {
@@ -199,7 +197,6 @@ void Server::Worker()
 			while (remain_data > 0) {
 				short* pSize = (short*)&p[0];
 				int packet_size = *pSize;
-
 
 				if (packet_size <= remain_data) {
 					_packetMgr->ProcessRecvPacket(static_cast<int>(key), p, packet_size);

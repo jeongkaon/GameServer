@@ -15,6 +15,7 @@ public:
 	std::array<std::array<char, LIMIT_X>, LIMIT_Y> _npcInfo;
 
 	std::array<Object*, MAX_USER + MAX_NPC> objects;
+
 	static Sector sector[SECTOR_NUM][SECTOR_NUM];
 
 	Server* server;
@@ -30,7 +31,7 @@ public:
 	bool CanSee(int from, int to);
 	
 
-	int CheckLoginSession(int id);		//TODO. 기존에접속중인지 확인해야함
+	int CheckLoginSession(int id);		
 	void LoginSession(int id);
 
 	void MoveSession(int id, CS_MOVE_PACKET* packet);
@@ -46,7 +47,7 @@ public:
 
 	//공격관련
 	void AttackSessionToNPC(int id, char dir);
-	void Attack(int npcId, int id);		//중복코드 따로 함수로 구현
+	void Attack(int npcId, int id);		
 
 	void RespawnNPC(int npcId);
 

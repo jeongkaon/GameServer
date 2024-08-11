@@ -6,7 +6,6 @@ using namespace std;
 
 MapManager::MapManager()
 {
-	///_moveInfo.reset();
 }
 
 void MapManager::InitMapInfo()
@@ -29,7 +28,6 @@ void MapManager::InitMapInfo()
 	
 }
 
-//¾ê°¡ ¹®Á¦´Ù. 
 bool MapManager::IsCanGoCheck(int dir,int& x, int& y)
 {
 

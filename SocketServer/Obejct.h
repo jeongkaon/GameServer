@@ -7,7 +7,6 @@ public:
 	SessionState _state;
 	std::mutex	_sLock;
 
-
 	int _sectorCol;
 	int _sectorRow;
 

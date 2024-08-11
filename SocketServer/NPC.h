@@ -44,7 +44,6 @@ public:
 	bool OnAttackReceived(int damage);
 
 	void RecoverHP();
-	//±Ê√£±‚
 
 };
 

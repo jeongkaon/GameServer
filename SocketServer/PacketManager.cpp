@@ -21,9 +21,7 @@ void PacketManager::Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConne
 	_mapMgr = mapMgr;
 	_dbConnPool = dbConnPool;
 
-	//회원가입을 만들면 스트레스 테스트가 되는지 알아야함
 	_recvFuntionMap[(int)CS_REGIST] = &PacketManager::ProcessRegistPacket;
-
 	_recvFuntionMap[(int)CS_LOGIN] = &PacketManager::ProcessLoginPacket;
 	_recvFuntionMap[(int)CS_LOGIN_STRESS] = &PacketManager::ProcessStressLoginPacket;
 	_recvFuntionMap[(int)CS_CHOICE_CHARACTER] = &PacketManager::ProcessChoiceCharactertPacket;
@@ -39,7 +37,6 @@ void PacketManager::Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConne
 
 void PacketManager::ProcessRecvPacket(int id, char* buf, int copySize)
 {
-	//헤더 정보를 뽑아서 보내버린다.
 	PACKET_HEADER* pHeader = reinterpret_cast<PACKET_HEADER*>(buf);
 
 	auto iter = _recvFuntionMap.find(pHeader->type);
@@ -87,7 +84,6 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 		_sessionMgr->CharChoiceSession(id);
 		break;
 	case NOT_CHOICE_CHARACTER:
-		
 		_sessionMgr->CharChoiceSession(id);
 		break;
 	default:
@@ -117,7 +113,7 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 	
 	_sessionMgr->LoginSession(id);
 
-	//AddUSerInDB(&userData);
+	AddUSerInDB(&userData);
 
 	std::cout << std::endl;
 

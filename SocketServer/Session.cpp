@@ -16,10 +16,10 @@ Session::Session()
 	_exp = 0;
 	
 	_level = 1;
+
 	//레벨에 따라 공격력 달라진다.
 	_damage = _level * 10;
 	
-	//일단 1000으로 해두겠따->
 	_hp = 100;
 	_maxHp = 100;
 }
@@ -109,7 +109,6 @@ void Session::SendMovePacket(int id, int x, int y, int time,char dir)
 
 void Session::SendAddPlayerPacket(int id, char* name, int x, int y, int visual)
 {
-	//TODO. 다른 정보를 어떻게 받을것인지
 
 	_vl.lock();
 	_viewList.insert(id);
@@ -175,14 +174,11 @@ void Session::OnAttackSuccess(int visual)
 		_exp = _level * _level * 2 * 2;
 	}
 
-	//EXP 올라가면 레벨 업그레이드 해야함
 	switch (_exp / 100)
 	{
 	case LEVEL2:
 		std::cout << "LEVEL2 업그레이드\n";
 		_level = 2;
-		//maxhp값도 올려줘야한다.
-		//_maxHp
 		break;
 	case LEVEL3:
 		std::cout << "LEVEL3 업그레이드\n";
@@ -200,26 +196,20 @@ void Session::OnAttackSuccess(int visual)
 		break;
 	}
 
-	//성공패킷 보내던가 그래야함
 
 
 }
 
 bool Session::OnAttackReceived(int damage)
 {
-	//hp 줄여야한다.
 	
 	_hp -= damage;
-	//0이면 exp절반 감소시키고  hp회복시키자.
-	//그리고 게임 시작위치로 변경시켜야함.
 
 	if (_hp < 0) {
 		_x = 5;
 		_y = 5;
 		_exp *= 0.5;
 
-
-		//TODO.레벨마다 max_hp다르게 해야하는데 그거 저장하고 바꿔줘야한다.
 		_hp = 50;
 
 

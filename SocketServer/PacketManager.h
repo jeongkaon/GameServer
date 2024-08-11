@@ -29,7 +29,6 @@ public:
 	void ProcessTeleportPacket(int id, char* buf, int copySize);
 	void ProcessLogoutPacket(int id, char* buf, int copySize);
 
-	//DB관련작업
 	int CheckUserInDB(const char* name, GameData* data);
 	bool AddUSerInDB(const char* name);
 	bool AddUSerInDB(const GameData* gameData);

@@ -28,8 +28,7 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	_id = MAX_USER + TotalNpcCount++;
 	_pathIndex = 0;
 	_state = ST_INGAME;
-	//NPC는 일단 10이로 하기
-	//타입별로 달라야하나??
+
 	_damage = 10;
 	_x = x;
 	_y = y;
@@ -39,7 +38,6 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	_visual = visual;
 	_hp = 100;
 
-	//id가아니라 type을 출력하는거로 일단 하겠다.
 	sprintf_s(_name, "NPC%d", _id);
 
 
@@ -78,7 +76,6 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 
 	SessionManager::sector[_sectorCol][_sectorRow].InsertObjectInSector(_id);
 
-	//루아 사용하는 애들만 해주기?
 	_L = luaL_newstate();
 
 	luaL_openlibs(_L);
@@ -131,9 +128,6 @@ void NPC::DoRandomMove()
 
 	//astar이동을 해보자.
 
-
-	//TODO. 이동가능한지 아닌지 확인해야함->랜덤이동은 쨋든 그렇다.
-
 	_x = x;
 	_y = y;
 
@@ -154,7 +148,6 @@ void NPC::DoRandomMove()
 void NPC::DoAstarMove(int desx ,int desy)
 {
 	
-	//패스를 찾아야한다.
 	astar.init(_x, _y, desx, desy);
 	astar.FindPath(_mapMgr, &path);
 
@@ -188,13 +181,11 @@ void NPC::DoAstarMove(int desx ,int desy)
 
 void NPC::OnAttackSuccess(int type)
 {
-	//얘는 type필요없긴한데 걍 일단 넣음
 }
 
 bool NPC::OnAttackReceived(int damage)
 {
 
-	//일단 10을 줄이자.
 
 	_hp -= damage;
 
@@ -214,7 +205,6 @@ bool NPC::OnAttackReceived(int damage)
 
 void NPC::RecoverHP()
 {
-	//TODO. 100인지 아닌지 먼지는 결정해야함
 	_hp = 100;
 }
 
