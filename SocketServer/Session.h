@@ -28,8 +28,9 @@ public:
 	void SendRemovePlayerPacket(int id);
 	void SendChatPacket(int id, const char* mess);
 	void SendChoiceCharPacket();
+	void SendAttackSuccessPakcet(int npcId, int damage);
 
-	void OnAttackSuccess(int type);
+	void OnAttackSuccess(int type,int npcId, int damage);
 	bool OnAttackReceived(int damage);
 
 	

@@ -28,6 +28,7 @@ constexpr char CS_TELEPORT = 4;
 constexpr char CS_LOGOUT = 5;			
 constexpr char CS_CHOICE_CHARACTER = 9;
 
+
 constexpr char SC_LOGIN_INFO = 2;
 constexpr char SC_LOGIN_FAIL = 3;
 constexpr char SC_ADD_OBJECT = 4;
@@ -36,6 +37,8 @@ constexpr char SC_MOVE_OBJECT = 6;
 constexpr char SC_CHAT = 7;
 constexpr char SC_STAT_CHANGE = 8;
 constexpr char SC_CHOICE_CHARACTER = 9;
+constexpr char SC_ATTACK_SUCCESS = 10;
+
 
 
 //error code
@@ -87,6 +90,11 @@ struct CS_ATTACK_PACKET : public PACKET_HEADER
 //서버->클라이언트
 struct SC_CHOICECHAR_PACKET :public PACKET_HEADER
 {
+};
+struct SC_SUC_ATTACK_PACKET :public PACKET_HEADER
+{
+	int npcId;
+	int damage;
 };
 
 

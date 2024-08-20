@@ -39,7 +39,7 @@ public:
 
 
 	//공격관련
-	virtual void OnAttackSuccess(int type){}
+	virtual void OnAttackSuccess(int type,int,int){}
 	virtual bool OnAttackReceived(int damage) { return false; }
 };
 

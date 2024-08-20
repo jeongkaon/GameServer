@@ -229,10 +229,6 @@ void ProcessPacket(char* ptr)
 		isSelectWindow1Closed = true;
 
 		avatar.move(packet->x, packet->y);
-
-;
-
-		
 	}
 	break;
 
@@ -322,6 +318,13 @@ void ProcessPacket(char* ptr)
 		
 		break;
 	}
+	case SC_ATTACK_SUCCESS:
+	{
+		SC_SUC_ATTACK_PACKET* packet = reinterpret_cast<SC_SUC_ATTACK_PACKET*>(ptr);
+		std::cout << "용사가 몬스터[" << packet->npcId << "] 를 때려서 " << packet->damage << "의 데미지를 입혔습니다\n";
+
+		break;
+	}
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
 	}
@@ -403,8 +406,6 @@ void client_main()
 	//debugBox.setPosition((avatar.m_x- VIEW_RANGE )* TILE_WIDTH , (avatar.m_y- VIEW_RANGE)* TILE_WIDTH);
 	//g_window->draw(debugBox);
 
-
-	//아이디를 그린다.
 	sf::Text text;
 	text.setFont(g_font);
 	char buf[100];
@@ -416,8 +417,6 @@ void client_main()
 //캐릭터창 선택하는거
 void SelectCharacterWindow(sf::RenderWindow& window1, bool& isWindow1Closed) 
 {
-
-
 	std::vector<CharacterSelectButton> buttons;
 	buttons.emplace_back("Aurora", g_font, 30, 440);
 	buttons.emplace_back("Moon", g_font, 230, 440);
@@ -824,16 +823,11 @@ void GameWindow()
 				{
 					if (ChatInput.isActive == true) break;
 					//std::cout << "공격키 누름\n";
-					//이벡트나 터뜨리자.
 					CS_ATTACK_PACKET p;
 					p.size = sizeof(p);
 					p.type = CS_ATTACK;
 					p.dir = ALL;
 					send_packet(&p);
-
-					//양방향으로 리소스 띄워야함
-
-					//맞은지 아닌지는 서버에서 해보쟈.
 
 					break;
 				}

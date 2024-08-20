@@ -486,7 +486,7 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 void SessionManager::Attack(int npcId, int id)
 {
 	std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
-	objects[id]->OnAttackSuccess(objects[npcId]->_visual);
+	objects[id]->OnAttackSuccess(objects[npcId]->_visual,npcId, objects[id]->_damage);
 	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
 
 		unordered_set<int> _viewlist;

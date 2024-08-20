@@ -165,7 +165,19 @@ void Session::SendChoiceCharPacket()
 
 }
 
-void Session::OnAttackSuccess(int visual)
+void Session::SendAttackSuccessPakcet(int npcId, int damage)
+{
+	SC_SUC_ATTACK_PACKET packet;
+	packet.size = sizeof(SC_SUC_ATTACK_PACKET);
+	packet.type = SC_ATTACK_SUCCESS;
+	packet.npcId = npcId;
+	packet.damage = damage;
+	DoSend(&packet);
+
+}
+
+
+void Session::OnAttackSuccess(int visual,int npcId, int damage)
 {
 	if (visual == PEACE_FIXED) {
 		_exp = _level * _level * 2;
@@ -173,6 +185,7 @@ void Session::OnAttackSuccess(int visual)
 	else {
 		_exp = _level * _level * 2 * 2;
 	}
+	SendAttackSuccessPakcet(npcId, damage);
 
 	switch (_exp / 100)
 	{
