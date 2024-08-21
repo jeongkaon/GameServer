@@ -9,7 +9,6 @@ Sector SessionManager::sector[SECTOR_NUM][SECTOR_NUM]{};
 
 SessionManager::SessionManager()
 {
-	std::cout << "herel!" << std::endl;
 	server = Server::getInstance();
 
 	for (int i = 0; i < MAX_USER; ++i) {
@@ -85,7 +84,26 @@ int SessionManager::AcceptClient(SOCKET& socket)
 	}
 }
 
+unordered_set<int> SessionManager::UpdateViewlistInSection(const int curCol, const int curRow, const int id)
+{
+	unordered_set<int> viewList;
+	unordered_set<int> objs;
+	for (int i = -1; i < 2; ++i) {
+		if (curCol + i <0 || curCol + i >SECTOR_NUM) continue;
+		for (int j = -1; j < 2; ++j) {
+			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
+			sector[curCol + i][curRow + j].SetObjectList(objs);
+			for (int clientId : objs) {
+				if (objects[clientId]->_state != ST_INGAME) continue;
+				if (objects[clientId]->_id == id) continue;
+				if (false == CanSee(id, objects[clientId]->_id)) continue;
+				viewList.insert(objects[clientId]->_id);
+			}
+		}
+	}
+	return viewList;
 
+}
 int SessionManager::RetNewClientId()
 {
 
@@ -176,21 +194,7 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 	unordered_set<int> old_vlist = objects[id]->_viewList;
 	objects[id]->_vl.unlock();
 
-	unordered_set<int> new_viewlist;
-	unordered_set<int> objs;
-	for (int i = -1; i < 2; ++i) {
-		if (curCol + i <0 || curCol + i >SECTOR_NUM) continue;
-		for (int j = -1; j < 2; ++j) {
-			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
-			sector[curCol + i][curRow + j].SetObjectList(objs);
-			for (int clientId : objs) {
-				if (objects[clientId]->_state != ST_INGAME) continue;
-				if (objects[clientId]->_id == id) continue;
-				if (false == CanSee(id, objects[clientId]->_id)) continue;
-				new_viewlist.insert(objects[clientId]->_id);
-			}
-		}
-	}
+	unordered_set<int> new_viewlist = UpdateViewlistInSection(curCol, curRow, id);
 
 	objects[id]->SendMovePacket(dir);
 
@@ -236,6 +240,7 @@ bool SessionManager::CanSee(int from, int to)
 	if (abs(objects[from]->_x - objects[to]->_x) > VIEW_RANGE) return false;
 	return abs(objects[from]->_y - objects[to]->_y) <= VIEW_RANGE;
 }
+
 void SessionManager::disconnect(int key)
 {
 	for (auto& pl : objects) {
@@ -260,49 +265,14 @@ void SessionManager::NpcRandomMove(int id)
 	int Col = objects[id]->_sectorCol;
 	int Row = objects[id]->_sectorRow;
 
-	std::unordered_set<int> old_vl;
-	std::unordered_set<int> objs;
-
-	for (int i = -1; i < 1; ++i) {
-		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-		for (int j = -1; j < 1; ++j) {
-			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-			
-			sector[Col + i][Row + j].SetObjectList(objs);
-
-			for (int clientId : objs) {
-				if (ST_INGAME != objects[clientId]->_state) continue;
-				if (clientId >= MAX_USER) continue;
-				if (false == CanSee(objects[id]->_id, objects[clientId]->_id)) continue;
-				old_vl.insert(objects[clientId]->_id);
-			}
-		}
-	}
-	
+	std::unordered_set<int> old_vl = UpdateViewlistInSection(Col, Row, id);
 
 	static_cast<NPC*>(objects[id])->DoRandomMove();
 
 	Col = objects[id]->_sectorCol;
 	Row = objects[id]->_sectorRow;
 
-	unordered_set<int> new_viewlist;
-	for (int i = -1; i < 1; ++i) {
-		if (Col + i <0 ||Col + i >SECTOR_NUM) continue;
-
-		for (int j = -1; j < 1; ++j) {
-			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-			sector[Col + i][Row + j].SetObjectList(objs);
-
-			for (int clientId : objs) {
-				if (objects[clientId]->_state != ST_INGAME) continue;
-				if (objects[clientId]->_id == id) continue;
-				if (false == CanSee(id, objects[clientId]->_id)) continue;
-				new_viewlist.insert(objects[clientId]->_id);
-			}
-		}
-	}
-
+	unordered_set<int> new_viewlist= UpdateViewlistInSection(Col, Row, id);
 
 	for (auto pl : new_viewlist) {
 		if (0 == old_vl.count(pl)) {
@@ -330,54 +300,17 @@ void SessionManager::NpcRandomMove(int id)
 }
 void SessionManager::NpcAstarMove(int id, int target)
 {
-
-
 	int Col = objects[id]->_sectorCol;
 	int Row = objects[id]->_sectorRow;
 
-	std::unordered_set<int> old_vl;
-	std::unordered_set<int> objs;
-
-	for (int i = -1; i < 1; ++i) {
-		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-		for (int j = -1; j < 1; ++j) {
-			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-
-			sector[Col + i][Row + j].SetObjectList(objs);
-
-			for (int clientId : objs) {
-				if (ST_INGAME != objects[clientId]->_state) continue;
-				if (clientId >= MAX_USER) continue;
-				if (false == CanSee(objects[id]->_id, objects[clientId]->_id)) continue;
-				old_vl.insert(objects[clientId]->_id);
-			}
-		}
-	}
-
+	std::unordered_set<int> old_vl = UpdateViewlistInSection(Col, Row, id);
 
 	static_cast<NPC*>(objects[id])->DoAstarMove(objects[target]->_x,objects[target]->_y);
 
 	Col = objects[id]->_sectorCol;
 	Row = objects[id]->_sectorRow;
 
-	unordered_set<int> new_viewlist;
-	for (int i = -1; i < 1; ++i) {
-		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-		for (int j = -1; j < 1; ++j) {
-			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-			sector[Col + i][Row + j].SetObjectList(objs);
-
-			for (int clientId : objs) {
-				if (objects[clientId]->_state != ST_INGAME) continue;
-				if (objects[clientId]->_id == id) continue;
-				if (false == CanSee(id, objects[clientId]->_id)) continue;
-				new_viewlist.insert(objects[clientId]->_id);
-			}
-		}
-	}
-
+	unordered_set<int> new_viewlist= UpdateViewlistInSection(Col, Row, id);
 
 	for (auto pl : new_viewlist) {
 		if (0 == old_vl.count(pl)) {
@@ -457,7 +390,7 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 
 		}
 		break;
-	case ALL: //4방향공격인데 지금 8방향으로 되어있음..
+	case ALL: //4방향공격인데 지금 8방향으로 되어있음..->고쳣나?
 		for(int npcId : vlist){
 			if (abs(static_cast<int>(objects[npcId]->_x- objects[id]->_x)) > ATTACK_RANGE) {
 				continue;
@@ -483,34 +416,19 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 		break;
 	}
 }
+
 void SessionManager::Attack(int npcId, int id)
 {
 	std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
 	objects[id]->OnAttackSuccess(objects[npcId]->_visual,npcId, objects[id]->_damage);
-	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
 
-		unordered_set<int> _viewlist;
-		std::unordered_set<int> objs;
+	//몬스터 죽었을 때 
+	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
 
 		int Col = objects[npcId]->_sectorCol;
 		int Row = objects[npcId]->_sectorRow;
 
-		for (int i = -1; i < 1; ++i) {
-			if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-			for (int j = -1; j < 1; ++j) {
-				if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-				sector[Col + i][Row + j].SetObjectList(objs);
-
-				for (int clientId : objs) {
-					if (objects[clientId]->_state != ST_INGAME) continue;
-					if (objects[clientId]->_id > MAX_USER) continue;
-
-					if (false == CanSee(id, objects[clientId]->_id)) continue;
-					_viewlist.insert(objects[clientId]->_id);
-				}
-			}
-		}
+		unordered_set<int> _viewlist = UpdateViewlistInSection(Col, Row, id);
 
 		for (int ClidntId : _viewlist) {
 			objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
@@ -533,30 +451,12 @@ void SessionManager::RespawnNPC(int npcId)
 {
 	static_cast<NPC*>(objects[npcId])->RecoverHP();
 
-	unordered_set<int> _viewlist;
-	std::unordered_set<int> objs;
-
 	int Col = objects[npcId]->_sectorCol;
 	int Row = objects[npcId]->_sectorRow;
 
 	sector[Col][Row].InsertObjectInSector(npcId);
 
-	for (int i = -1; i < 1; ++i) {
-		if (Col + i <0 || Col + i >SECTOR_NUM) continue;
-
-		for (int j = -1; j < 1; ++j) {
-			if (Row + j <0 || Row + j >SECTOR_NUM) continue;
-			sector[Col + i][Row + j].SetObjectList(objs);
-
-			for (int clientId : objs) {
-				if (objects[clientId]->_state != ST_INGAME) continue;
-				if (objects[clientId]->_id > MAX_USER) continue;
-
-				if (false == CanSee(npcId, objects[clientId]->_id)) continue;
-				_viewlist.insert(objects[clientId]->_id);
-			}
-		}
-	}
+	unordered_set<int> _viewlist = UpdateViewlistInSection(Col, Row, npcId);
 
 	for (int ClidntId : _viewlist) {
 		objects[ClidntId]->SendAddPlayerPacket(objects[npcId]->_id, objects[npcId]->_name,
