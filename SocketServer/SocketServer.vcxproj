@@ -138,7 +138,7 @@
     <ClCompile Include="MapManager.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Obejct.cpp" />
-    <ClCompile Include="PacketManager.cpp" />
+    <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="Sector.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Session.cpp" />
@@ -154,7 +154,7 @@
     <ClInclude Include="MapManager.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="Obejct.h" />
-    <ClInclude Include="PacketManager.h" />
+    <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="protocol_2024.h" />
     <ClInclude Include="Sector.h" />
     <ClInclude Include="Server.h" />

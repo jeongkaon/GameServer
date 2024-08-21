@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "PacketManager.h"
+#include "PacketHandler.h"
 #include "SessionManager.h"
 #include "MapManager.h"
 #include "DBConnectionPool.h"
@@ -15,32 +15,29 @@ wchar_t* ConvertToWideChar(const char* str) {
 	return buffer;
 }
 
-void PacketManager::Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConnectionPool* dbConnPool)
+void PacketHandler::Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConnectionPool* dbConnPool)
 {
 	_sessionMgr = sessionMgr;
 	_mapMgr = mapMgr;
 	_dbConnPool = dbConnPool;
 
-	_recvFuntionMap[(int)CS_REGIST] = &PacketManager::ProcessRegistPacket;
-	_recvFuntionMap[(int)CS_LOGIN] = &PacketManager::ProcessLoginPacket;
-	_recvFuntionMap[(int)CS_LOGIN_STRESS] = &PacketManager::ProcessStressLoginPacket;
-	_recvFuntionMap[(int)CS_CHOICE_CHARACTER] = &PacketManager::ProcessChoiceCharactertPacket;
-	_recvFuntionMap[(int)CS_MOVE] = &PacketManager::ProcessMovePacket;
-	_recvFuntionMap[(int)CS_CHAT] = &PacketManager::ProcessChattingPacket;
-	_recvFuntionMap[(int)CS_ATTACK] = &PacketManager::ProcessAttackPacket;
-	_recvFuntionMap[(int)CS_TELEPORT] = &PacketManager::ProcessTeleportPacket;
-	_recvFuntionMap[(int)CS_LOGOUT] = &PacketManager::ProcessLogoutPacket;
+	_recvFuntionMap[(int)CS_REGIST] = &PacketHandler::ProcessRegistPacket;
+	_recvFuntionMap[(int)CS_LOGIN] = &PacketHandler::ProcessLoginPacket;
+	_recvFuntionMap[(int)CS_LOGIN_STRESS] = &PacketHandler::ProcessStressLoginPacket;
+	_recvFuntionMap[(int)CS_CHOICE_CHARACTER] = &PacketHandler::ProcessChoiceCharactertPacket;
+	_recvFuntionMap[(int)CS_MOVE] = &PacketHandler::ProcessMovePacket;
+	_recvFuntionMap[(int)CS_CHAT] = &PacketHandler::ProcessChattingPacket;
+	_recvFuntionMap[(int)CS_ATTACK] = &PacketHandler::ProcessAttackPacket;
+	_recvFuntionMap[(int)CS_TELEPORT] = &PacketHandler::ProcessTeleportPacket;
+	_recvFuntionMap[(int)CS_LOGOUT] = &PacketHandler::ProcessLogoutPacket;
 
 
 
 }
 
-void PacketManager::ProcessRecvPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessRecvPacket(int id, char* buf, int copySize, int type)
 {
-	PACKET_HEADER* pHeader = reinterpret_cast<PACKET_HEADER*>(buf);
-
-	auto iter = _recvFuntionMap.find(pHeader->type);
-
+	auto iter = _recvFuntionMap.find(type);
 	if (iter != _recvFuntionMap.end())
 	{
 		(this->*(iter->second))(id, buf, copySize);
@@ -48,17 +45,16 @@ void PacketManager::ProcessRecvPacket(int id, char* buf, int copySize)
 	else {
 		return;
 	}
-
 }
 
 
-void PacketManager::ProcessRegistPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessRegistPacket(int id, char* buf, int copySize)
 {
 	CS_REGIST_PACKET* p = reinterpret_cast<CS_REGIST_PACKET*>(buf);
 
 }
 
-void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessLoginPacket(int id, char* buf, int copySize)
 {
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 	
@@ -94,7 +90,7 @@ void PacketManager::ProcessLoginPacket(int id, char* buf, int copySize)
 
 }
 
-void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessStressLoginPacket(int id, char* buf, int copySize)
 {
 	CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(buf);
 
@@ -120,7 +116,7 @@ void PacketManager::ProcessStressLoginPacket(int id, char* buf, int copySize)
 }
 
 
-void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessChoiceCharactertPacket(int id, char* buf, int copySize)
 {
 	CS_CHOICECHAR_PACKET* p = reinterpret_cast<CS_CHOICECHAR_PACKET*>(buf);
 	
@@ -130,7 +126,7 @@ void PacketManager::ProcessChoiceCharactertPacket(int id, char* buf, int copySiz
 	AddVisualInfoInDB(_sessionMgr->objects[id]->_name, p->visual);
 }
 
-void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessMovePacket(int id, char* buf, int copySize)
 {
 	CS_MOVE_PACKET* packet = reinterpret_cast<CS_MOVE_PACKET*>(buf);
 	_sessionMgr->objects[id]->last_move_time = packet->move_time;
@@ -152,7 +148,7 @@ void PacketManager::ProcessMovePacket(int id, char* buf, int copySize)
 
 }
 
-void PacketManager::ProcessChattingPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessChattingPacket(int id, char* buf, int copySize)
 {
 	CS_CHAT_PACKET* packet = reinterpret_cast<CS_CHAT_PACKET*>(buf);
 
@@ -162,7 +158,7 @@ void PacketManager::ProcessChattingPacket(int id, char* buf, int copySize)
 
 }
 
-void PacketManager::ProcessAttackPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessAttackPacket(int id, char* buf, int copySize)
 {
 	CS_ATTACK_PACKET* packet = reinterpret_cast<CS_ATTACK_PACKET*>(buf);
 
@@ -170,15 +166,15 @@ void PacketManager::ProcessAttackPacket(int id, char* buf, int copySize)
 
 }
 
-void PacketManager::ProcessTeleportPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessTeleportPacket(int id, char* buf, int copySize)
 {
 }
 
-void PacketManager::ProcessLogoutPacket(int id, char* buf, int copySize)
+void PacketHandler::ProcessLogoutPacket(int id, char* buf, int copySize)
 {
 }
 
-int PacketManager::CheckUserInDB(const char* name,GameData* data)
+int PacketHandler::CheckUserInDB(const char* name,GameData* data)
 {
 	DBConnection* dbConn = _dbConnPool->Pop();
 	dbConn->Unbind();
@@ -211,7 +207,7 @@ int PacketManager::CheckUserInDB(const char* name,GameData* data)
 	return NONE;
 }
 
-bool PacketManager::AddUSerInDB(const char* name)
+bool PacketHandler::AddUSerInDB(const char* name)
 {
 	DBConnection* dbConn = _dbConnPool->Pop();
 	dbConn->Unbind();
@@ -231,7 +227,7 @@ bool PacketManager::AddUSerInDB(const char* name)
 
 
 }
-bool PacketManager::AddUSerInDB(const GameData* gameData)
+bool PacketHandler::AddUSerInDB(const GameData* gameData)
 {
 	//스트레스 테스트용
 	DBConnection* dbConn = _dbConnPool->Pop();
@@ -254,7 +250,7 @@ bool PacketManager::AddUSerInDB(const GameData* gameData)
 
 }
 
-bool PacketManager::AddVisualInfoInDB(const char* name, int visual)
+bool PacketHandler::AddVisualInfoInDB(const char* name, int visual)
 {
 
 	DBConnection* dbConn = _dbConnPool->Pop();

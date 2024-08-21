@@ -65,8 +65,6 @@ enum DIRECTION { LEFT = 2, RIGHT = 3, UP = 0, DOWN = 1 ,ALL = 5};
 
 
 #pragma pack (push, 1)
-
-//내가 추가한것들
 struct PACKET_HEADER {
 	unsigned short size;
 	char	type;

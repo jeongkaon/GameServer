@@ -2,7 +2,7 @@
 #include "Server.h"
 
 #include "SessionManager.h"
-#include "PacketManager.h"
+#include "PacketHandler.h"
 #include "MapManager.h"
 #include "DBConnectionPool.h"
 
@@ -32,7 +32,7 @@ void Server::Init()
 	_dbConnPool = new DBConnectionPool();
 	_dbConnPool->Connect(10, L"2024_TF_GS");
 
-	_packetMgr = new PacketManager();
+	_packetMgr = new PacketHandler();
 	_packetMgr->Init(_sessionMgr, _mapMgr, _dbConnPool);
 
 	_numThreads = std::thread::hardware_concurrency();
@@ -59,7 +59,7 @@ void Server::Start()
 
 	_clientSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 	a_over._comp_type = OP_ACCEPT;
-	AcceptEx(_serverSocket, _clientSocket, a_over._send_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
+	AcceptEx(_serverSocket, _clientSocket, a_over._io_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
 
 	_timerThread = std::thread(&Server::Timer, this);
 
@@ -144,10 +144,10 @@ void Server::Timer()
 void Server::Worker()
 {
 	while (true) {
-		DWORD num_bytes;
+		DWORD io_byte;
 		ULONG_PTR key;
 		WSAOVERLAPPED* over = nullptr;
-		BOOL ret = GetQueuedCompletionStatus(_iocp, &num_bytes, &key, &over, INFINITE);
+		BOOL ret = GetQueuedCompletionStatus(_iocp, &io_byte, &key, &over, INFINITE);
 
 		ExpOver* exOver = reinterpret_cast<ExpOver*>(over);
 		if (FALSE == ret) {
@@ -161,7 +161,7 @@ void Server::Worker()
 			}
 		}
 
-		if ((0 == num_bytes) && ((exOver->_comp_type == OP_RECV) || (exOver->_comp_type == OP_SEND))) {
+		if ((0 == io_byte) && ((exOver->_comp_type == OP_RECV) || (exOver->_comp_type == OP_SEND))) {
 			_sessionMgr->disconnect(static_cast<int>(key));
 			if (exOver->_comp_type == OP_SEND) delete exOver;
 			continue;
@@ -187,27 +187,25 @@ void Server::Worker()
 
 			ZeroMemory(&a_over._over, sizeof(a_over._over));
 			int addr_size = sizeof(SOCKADDR_IN);
-			AcceptEx(_serverSocket, _clientSocket, a_over._send_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
+			AcceptEx(_serverSocket, _clientSocket, a_over._io_buf, 0, addr_size + 16, addr_size + 16, 0, &a_over._over);
 			break;
 
 		}
 		case OP_RECV: {
-			int remain_data = num_bytes + static_cast<Session*>(_sessionMgr->objects[key])->_prevRemain;
-			char* p = exOver->_send_buf;
-			while (remain_data > 0) {
-				short* pSize = (short*)&p[0];
-				int packet_size = *pSize;
-
-				if (packet_size <= remain_data) {
-					_packetMgr->ProcessRecvPacket(static_cast<int>(key), p, packet_size);
-					p = p + packet_size;
-					remain_data = remain_data - packet_size;
+			int process_data = io_byte + static_cast<Session*>(_sessionMgr->objects[key])->_prevRemain;
+			char* buf = exOver->_io_buf;
+			PACKET_HEADER* headerInfo = reinterpret_cast<PACKET_HEADER*>(buf);
+			while (process_data > 0) {
+				if (headerInfo->size <= process_data) {
+					_packetMgr->ProcessRecvPacket(static_cast<int>(key), buf, headerInfo->size,headerInfo->type);
+					buf +=  headerInfo->size;
+					process_data -= headerInfo->size;
 				}
 				else break;
 			}
-			static_cast<Session*>(_sessionMgr->objects[key])->_prevRemain = remain_data;
-			if (remain_data > 0) {
-				memcpy(exOver->_send_buf, p, remain_data);
+			static_cast<Session*>(_sessionMgr->objects[key])->_prevRemain = process_data;
+			if (process_data != 0) {
+				memcpy(exOver->_io_buf, buf, process_data);
 			}
 			static_cast<Session*>(_sessionMgr->objects[key])->DoRecv();
 			break;

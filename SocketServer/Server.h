@@ -2,7 +2,7 @@
 #include "ExpOver.h"
 
 class SessionManager;
-class PacketManager;
+class PacketHandler;
 class MapManager;
 class DBConnectionPool;
 struct TimerEvent;
@@ -27,7 +27,7 @@ private:
     int addr_size;
 
     SessionManager* _sessionMgr;
-    PacketManager* _packetMgr;
+    PacketHandler* _packetMgr;
     DBConnectionPool* _dbConnPool;
 
     concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;

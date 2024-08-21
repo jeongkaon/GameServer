@@ -3,9 +3,10 @@ class SessionManager;
 class MapManager;
 class DBConnectionPool;
 
-class PacketManager
+class PacketHandler
 {
-	typedef void(PacketManager::* PROCESS_RECV_PACKET_FUNCTION)(int, char*, int);
+	typedef void(PacketHandler::* PROCESS_RECV_PACKET_FUNCTION)(int, char*, int);
+
 	std::unordered_map<int, PROCESS_RECV_PACKET_FUNCTION> _recvFuntionMap;
 
 	SessionManager* _sessionMgr;
@@ -17,7 +18,7 @@ public:
 
 	void Init(SessionManager* sessionMgr, MapManager* mapMgr, DBConnectionPool* dbConnPool);
 
-	void ProcessRecvPacket(int id, char* buf, int copySize);
+	void ProcessRecvPacket(int id, char* buf, int copySize, int type);
 	void ProcessRegistPacket(int id, char* buf, int copySize);
 	void ProcessChoiceCharactertPacket(int id, char* buf, int copySize);
 	void ProcessLoginPacket(int id, char* buf, int copySize);

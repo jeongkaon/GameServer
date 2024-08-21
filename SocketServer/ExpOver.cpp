@@ -6,7 +6,7 @@
 ExpOver::ExpOver()
 {
 	_wsabuf.len = BUF_SIZE;
-	_wsabuf.buf = _send_buf;
+	_wsabuf.buf = _io_buf;
 	_comp_type = OP_RECV;
 	ZeroMemory(&_over, sizeof(_over));
 }
@@ -15,8 +15,8 @@ ExpOver::ExpOver()
 ExpOver::ExpOver(char* packet)
 {
 	_wsabuf.len = packet[0];
-	_wsabuf.buf = _send_buf;
+	_wsabuf.buf = _io_buf;
 	ZeroMemory(&_over, sizeof(_over));
 	_comp_type = OP_SEND;
-	memcpy(_send_buf, packet, packet[0]);
+	memcpy(_io_buf, packet, packet[0]);
 }

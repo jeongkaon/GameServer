@@ -49,7 +49,7 @@ void Session::DoRecv()
 	DWORD recv_flag = 0;
 	ZeroMemory(&_recvOver._over, sizeof(_recvOver._over));
 	_recvOver._wsabuf.len = BUF_SIZE - _prevRemain;
-	_recvOver._wsabuf.buf = _recvOver._send_buf + _prevRemain;
+	_recvOver._wsabuf.buf = _recvOver._io_buf + _prevRemain;
 
 	WSARecv(_socket, &_recvOver._wsabuf, 1, 0, &recv_flag, &_recvOver._over, 0);
 
