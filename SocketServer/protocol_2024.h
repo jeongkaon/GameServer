@@ -38,6 +38,10 @@ constexpr char SC_CHAT = 7;
 constexpr char SC_STAT_CHANGE = 8;
 constexpr char SC_CHOICE_CHARACTER = 9;
 constexpr char SC_ATTACK_SUCCESS = 10;
+constexpr char SC_GET_EXP = 11;
+constexpr char SC_PLYAER_ATTACKED = 12;
+
+
 
 
 
@@ -97,6 +101,19 @@ struct SC_SUC_ATTACK_PACKET :public PACKET_HEADER
 	int damage;
 };
 
+struct SC_GET_EXP_PACKET :public PACKET_HEADER
+{
+	int npcId;
+	int level;
+	int exp;
+	
+};
+struct SC_PLYAER_ATTACKED_PACKET :public PACKET_HEADER
+{
+	int npcId;
+	int damage;
+
+};
 
 
 //클라이언트 -> 서버

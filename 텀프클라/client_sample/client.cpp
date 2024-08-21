@@ -56,6 +56,8 @@ public:
 	int spriteWidth;
 	int spriteHeight;
 
+	int level;
+	int exp;
 	
 
 	char name[NAME_SIZE];
@@ -312,8 +314,7 @@ void ProcessPacket(char* ptr)
 	case SC_CHAT:
 	{
 		SC_CHAT_PACKET* my_packet = reinterpret_cast<SC_CHAT_PACKET*>(ptr);
-		//처리해줘야한다.
-		std::cout <<my_packet->mess << std::endl;
+		std::cout <<"[채팅] "<< my_packet->mess << std::endl;
 
 		
 		break;
@@ -321,8 +322,21 @@ void ProcessPacket(char* ptr)
 	case SC_ATTACK_SUCCESS:
 	{
 		SC_SUC_ATTACK_PACKET* packet = reinterpret_cast<SC_SUC_ATTACK_PACKET*>(ptr);
-		std::cout << "용사가 몬스터[" << packet->npcId << "] 를 때려서 " << packet->damage << "의 데미지를 입혔습니다\n";
+		std::cout << "[전투] 몬스터[" << packet->npcId << "] 를 때려서 " << packet->damage << "의 데미지를 입혔습니다\n";
 
+		break;
+	}
+	case SC_GET_EXP:
+	{
+		SC_GET_EXP_PACKET* packet = reinterpret_cast<SC_GET_EXP_PACKET*>(ptr);
+		std::cout << "[전투] 몬스터[" << packet->npcId << "] 를 무찔러서 " << packet->exp << "의 경험치를 얻었습니다\n";
+		
+		//level도 처리해야한다
+		if (avatar.level != packet->level) {
+			std::cout << "[전투] " << packet->level << "로 레벨업을 하였습니다\n";
+			avatar.level = packet->level;
+
+		}
 		break;
 	}
 	default:

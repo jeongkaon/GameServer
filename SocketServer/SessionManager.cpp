@@ -114,8 +114,6 @@ int SessionManager::RetNewClientId()
 	}
 	return -1;
 }
-
-
 int SessionManager::CheckLoginSession(int id)
 {
 	return LOGIN_OK;
@@ -416,14 +414,16 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 		break;
 	}
 }
-
 void SessionManager::Attack(int npcId, int id)
 {
-	std::cout << "공격범위에 들어온 몬스터 id - " << npcId << std::endl;
-	objects[id]->OnAttackSuccess(objects[npcId]->_visual,npcId, objects[id]->_damage);
+	static_cast<Session*>(objects[id])->SendAttackSuccessPakcet(npcId, objects[id]->_damage);
 
 	//몬스터 죽었을 때 
 	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+
+		//죽었으면 경험치 줘야한다. 
+		static_cast<Session*>(objects[id])->UpdatePlayerExpAndLevel(objects[npcId]->_visual, npcId);
+
 
 		int Col = objects[npcId]->_sectorCol;
 		int Row = objects[npcId]->_sectorRow;
@@ -434,14 +434,15 @@ void SessionManager::Attack(int npcId, int id)
 			objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
 		}
 
-		//TODO. TEST용으로 5초로 변경함 -> 30초로 해놔야한다.
+		//TODO. TEST용으로 5초로 변경함 -> 30초로 해놔야한다. 30초 후에 부활하는 거임 
 		TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 5s, EV_NPC_DIE, 0 };
 		server->InputTimerEvent(dieev);
 
 	}
 
+	
 	if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) return;;
-
+	//이거 공격받으면 잠시 멈추는거임 
 	TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
 	server->InputTimerEvent(ev);
 

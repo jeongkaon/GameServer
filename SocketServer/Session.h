@@ -29,10 +29,13 @@ public:
 	void SendChatPacket(int id, const char* mess);
 	void SendChoiceCharPacket();
 	void SendAttackSuccessPakcet(int npcId, int damage);
+	
 
-	void OnAttackSuccess(int type,int npcId, int damage);
+	void SendPlayerGetExpAndLv(int npcId);
+	void SendReceivedDamage(int npcId, int damage);
+
 	bool OnAttackReceived(int damage);
-
+	void UpdatePlayerExpAndLevel(int visual, int npcId);
 	
 
 };

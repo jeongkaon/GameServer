@@ -176,17 +176,59 @@ void Session::SendAttackSuccessPakcet(int npcId, int damage)
 
 }
 
-
-void Session::OnAttackSuccess(int visual,int npcId, int damage)
+void Session::SendPlayerGetExpAndLv(int npcId)
 {
+	SC_GET_EXP_PACKET packet;
+	packet.size = sizeof(SC_GET_EXP_PACKET);
+	packet.type = SC_GET_EXP;
+	packet.exp = _exp;
+	packet.npcId = npcId;
+	packet.level = _level;
+	DoSend(&packet);
+
+}
+
+void Session::SendReceivedDamage(int npcId,int damage)
+{
+	SC_PLYAER_ATTACKED_PACKET packet;
+	packet.size = sizeof(SC_PLYAER_ATTACKED_PACKET);
+	packet.type = SC_PLYAER_ATTACKED;
+	packet.npcId = npcId;
+	packet.damage = damage;
+	DoSend(&packet);
+
+}
+
+bool Session::OnAttackReceived(int damage)
+{
+	
+	_hp -= damage;
+
+	if (_hp < 0) {
+		_x = 5;
+		_y = 5;
+		_exp *= 0.5;
+
+		_hp = 50;
+
+
+		return true;
+	}
+
+	return false;
+
+}
+
+void Session::UpdatePlayerExpAndLevel(int visual, int npcId)
+{
+
 	if (visual == PEACE_FIXED) {
 		_exp = _level * _level * 2;
+
 	}
 	else {
-		_exp = _level * _level * 2 * 2;
+		_exp += _level * _level * 2 * 2;
 	}
-	SendAttackSuccessPakcet(npcId, damage);
-
 	switch (_exp / 100)
 	{
 	case LEVEL2:
@@ -209,27 +251,9 @@ void Session::OnAttackSuccess(int visual,int npcId, int damage)
 		break;
 	}
 
+	//이거를 레벨이랑 경험치를 같이보내자
+	SendPlayerGetExpAndLv(npcId);
 
-
-}
-
-bool Session::OnAttackReceived(int damage)
-{
-	
-	_hp -= damage;
-
-	if (_hp < 0) {
-		_x = 5;
-		_y = 5;
-		_exp *= 0.5;
-
-		_hp = 50;
-
-
-		return true;
-	}
-
-	return false;
 
 }
 

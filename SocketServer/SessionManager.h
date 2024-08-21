@@ -37,7 +37,6 @@ public:
 	void MoveSession(int id, CS_MOVE_PACKET* packet);
 	void CharChoiceSession(int id);
 
-	//코드중복이슈로 섹션추가 함수로빼자.
 	unordered_set<int> UpdateViewlistInSection(const int curCol, const int curRow, const int id);
 
 	void disconnect(int key);
