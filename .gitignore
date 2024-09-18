@@ -20,7 +20,6 @@ mono_crash.*
 *.bin
 *.dds
 *.pdf
-*.ttf
 
 # Build results
 [Dd]ebug/
