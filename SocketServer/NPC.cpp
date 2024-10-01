@@ -197,7 +197,7 @@ bool NPC::OnAttackReceived(int damage, int dir)
 
 	if (_hp <= 0) {
 		std::cout << _id <<" 몬스터는 죽음" << std::endl;
-		
+		//죽었는데 왜 움직임? 죽었어도 타이머가 돌아가는거 같은데? -> 타이머는 막았는데 쩝 다시 살아나니 활성화가 안됨;
 		SessionManager::sector[_sectorCol][_sectorRow].EraseObjectInSector(_id);
 
 		return true;

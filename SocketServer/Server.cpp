@@ -301,12 +301,16 @@ void Server::Worker()
 		case OP_NPC_AGRO_MOVE:
 		{
 
-
-			_sessionMgr->NpcAstarMove(key, exOver->_ai_target_obj);
-
 	
 			_sessionMgr->objects[key]->_sLock.lock();
 
+			if (_sessionMgr->objects[key]->_hp <= 0 ||
+				_sessionMgr->NpcAstarMove(key, exOver->_ai_target_obj)==false) 
+			{
+				static_cast<NPC*>(_sessionMgr->objects[key])->_is_agro = false;
+				_sessionMgr->objects[key]->_sLock.unlock();
+				break;
+			}
 			auto L = static_cast<NPC*>(_sessionMgr->objects[key])->_L;
 
 			lua_getglobal(L, "event_player_move");			//이걸 호출해줘야한다.
@@ -315,6 +319,7 @@ void Server::Worker()
 
 
 			_sessionMgr->objects[key]->_sLock.unlock();
+		
 			TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_AGRO_MOVE, exOver->_ai_target_obj };
 			_timerQueue.push(ev);
 

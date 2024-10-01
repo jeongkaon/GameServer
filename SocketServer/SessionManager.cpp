@@ -52,9 +52,9 @@ void SessionManager::Init()
 			if (_npcInfo[i][j] == 0) continue;
 
 			int vis = _npcInfo[i][j] + 10;
-			//test 한다.PEACE_FIXED
+			//test 한다.AGRO_FIXED 초록색 테스트
 			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
-			static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, PEACE_FIXED);
+			static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, AGRO_FIXED);
 
 		}
 	}
@@ -298,12 +298,20 @@ void SessionManager::NpcRandomMove(int id)
 		}
 	}
 }
-void SessionManager::NpcAstarMove(int id, int target)
+bool SessionManager::NpcAstarMove(int id, int target)
 {
+	//여기서 거리를 계산하고 RAGNE보다 멀어졌으면 그만하는거로? 바로 리턴때리는거로?
+
+	if (NpcAgroActive(id, target)==false)
+	{
+		return false;
+	}
+
 	int Col = objects[id]->_sectorCol;
 	int Row = objects[id]->_sectorRow;
 
 	std::unordered_set<int> old_vl = UpdateViewlistInSection(Col, Row, id);
+
 
 	static_cast<NPC*>(objects[id])->DoAstarMove(objects[target]->_x,objects[target]->_y);
 
@@ -337,7 +345,7 @@ void SessionManager::NpcAstarMove(int id, int target)
 	}
 
 
-
+	return true;
 
 }
 void SessionManager::NpcAttackedMove(int id)
