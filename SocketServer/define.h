@@ -7,8 +7,8 @@ constexpr int ATTACK_RANGE = 1;
 constexpr int INIT_X_POS = 3;
 constexpr int INIT_Y_POS = 1;
 
-constexpr int LIMIT_X = 1000;
-constexpr int LIMIT_Y = 1000;
+constexpr int LIMIT_X = 2000;
+constexpr int LIMIT_Y = 2000;
 
 
 enum NpcType{MOVE_FIXED, MOVE_ROAMING, TYPE_AGRO, TYPE_PEACE};

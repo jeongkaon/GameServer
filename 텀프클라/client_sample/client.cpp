@@ -917,7 +917,7 @@ int main()
 	backgroundTexture13 = new sf::Texture;
 
 	//이거 로딩이 너무 느림.... 백그라운드로 빼고시푼디...
-	if (!backgroundTexture->loadFromFile("section1112.jpg"))
+	if (!backgroundTexture->loadFromFile("section123.jpg"))
 	{
 		std::cerr << "Error loading background image" << std::endl;
 	}
