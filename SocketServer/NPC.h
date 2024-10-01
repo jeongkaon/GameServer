@@ -4,6 +4,7 @@
 
 class MapManager;
 
+
 class NPC :public Object
 {
 
@@ -18,7 +19,7 @@ public:
 
 	lua_State* _L;
 
-	int _moveType;
+	int _moveType;	// fixed or roaming
 	int _monType;	//peace or agro
 
 	std::chrono::system_clock::time_point wakeupTime;
@@ -39,9 +40,12 @@ public:
 
 	void DoRandomMove();
 	void DoAstarMove(int desx, int desy);
+	
+	bool isCanGo(short x, short y);
 
 	void OnAttackSuccess(int visual);
-	bool OnAttackReceived(int damage);
+	bool OnAttackReceived(int damage, int dir);
+	
 
 	void RecoverHP();
 

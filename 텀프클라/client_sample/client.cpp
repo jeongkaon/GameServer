@@ -796,7 +796,8 @@ void GameWindow()
 					avatar.direction = RIGHT;
 					CS_MOVE_PACKET p;
 					p.size = sizeof(p);
-					p.type = CS_MOVE; p.direction = avatar.direction;
+					p.type = CS_MOVE; 
+					p.direction = avatar.direction;
 					
 					send_packet(&p);
 

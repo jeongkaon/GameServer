@@ -52,7 +52,9 @@ void SessionManager::Init()
 			if (_npcInfo[i][j] == 0) continue;
 
 			int vis = _npcInfo[i][j] + 10;
-			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
+			//test 한다.PEACE_FIXED
+			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
+			static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, PEACE_FIXED);
 
 		}
 	}
@@ -338,6 +340,42 @@ void SessionManager::NpcAstarMove(int id, int target)
 
 
 }
+void SessionManager::NpcAttackedMove(int id)
+{
+	int Col = objects[id]->_sectorCol;
+	int Row = objects[id]->_sectorRow;
+
+	std::unordered_set<int> old_vl = UpdateViewlistInSection(Col, Row, id);
+
+	Col = objects[id]->_sectorCol;
+	Row = objects[id]->_sectorRow;
+
+	unordered_set<int> new_viewlist = UpdateViewlistInSection(Col, Row, id);
+
+	for (auto pl : new_viewlist) {
+		if (0 == old_vl.count(pl)) {
+			objects[pl]->SendAddPlayerPacket(objects[id]->_id, objects[id]->_name,
+				objects[id]->_x, objects[id]->_y, objects[id]->_visual);
+		}
+		else {
+			objects[pl]->SendMovePacket(objects[id]->_id,
+				objects[id]->_x, objects[id]->_y, objects[id]->last_move_time, objects[id]->_dir);
+
+		}
+	}
+	for (auto pl : old_vl) {
+		if (0 == new_viewlist.count(pl)) {
+			objects[pl]->_vl.lock();
+			if (0 != objects[pl]->_viewList.count(objects[id]->_id)) {
+				objects[pl]->_vl.unlock();
+				objects[pl]->SendRemovePlayerPacket(objects[id]->_id);
+			}
+			else {
+				objects[pl]->_vl.unlock();
+			}
+		}
+	}
+}
 bool SessionManager::NpcAgroActive(int npc, int plyaer)
 {
 	if(objects[npc]->_x > static_cast<NPC*>(objects[npc])->_rangeX) return false;
@@ -347,6 +385,8 @@ bool SessionManager::NpcAgroActive(int npc, int plyaer)
 	if (abs(objects[npc]->_x - objects[plyaer]->_x) >= AGRO_ACTIVE_RANGE) return false;
 	return abs(objects[npc]->_y - objects[plyaer]->_y) < AGRO_ACTIVE_RANGE;
 }
+
+
 
 void SessionManager::SleepNPC(int id)
 {
@@ -362,7 +402,7 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 	objects[id]->_vl.unlock();
 
 	for (int npcId : vlist)	{
-		std::cout << npcId << std::endl;
+		std::cout <<"viewlist에 들어온 npc :" << npcId << std::endl;
 	}
 	std::cout<<std::endl;
 
@@ -416,10 +456,12 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 }
 void SessionManager::Attack(int npcId, int id)
 {
+	cout <<npcId <<"번의 NPC 공격성공\n";
+
 	static_cast<Session*>(objects[id])->SendAttackSuccessPakcet(npcId, objects[id]->_damage);
 
 	//몬스터 죽었을 때 
-	if (objects[npcId]->OnAttackReceived(objects[id]->_damage)) {
+	if (objects[npcId]->OnAttackReceived(objects[id]->_damage, objects[id]->_dir)) {
 
 		//죽었으면 경험치 줘야한다. 
 		static_cast<Session*>(objects[id])->UpdatePlayerExpAndLevel(objects[npcId]->_visual, npcId);
@@ -433,11 +475,15 @@ void SessionManager::Attack(int npcId, int id)
 		for (int ClidntId : _viewlist) {
 			objects[ClidntId]->SendRemovePlayerPacket(objects[npcId]->_id);
 		}
+		objects[id]->SendRemovePlayerPacket(objects[npcId]->_id);
 
 		//TODO. TEST용으로 5초로 변경함 -> 30초로 해놔야한다. 30초 후에 부활하는 거임 
 		TimerEvent* dieev = new TimerEvent{ npcId, std::chrono::system_clock::now() + 5s, EV_NPC_DIE, 0 };
 		server->InputTimerEvent(dieev);
 
+	}
+	else {
+		NpcAttackedMove(npcId);
 	}
 
 	

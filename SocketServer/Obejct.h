@@ -40,6 +40,6 @@ public:
 
 	//공격관련
 	virtual void OnAttackSuccess(int type,int,int){}
-	virtual bool OnAttackReceived(int damage) { return false; }
+	virtual bool OnAttackReceived(int damage, int dir) { return false; }
 };
 

@@ -143,6 +143,8 @@ void PacketHandler::ProcessMovePacket(int id, char* buf, int copySize)
 	
 		_sessionMgr->objects[id]->_x = x;
 		_sessionMgr->objects[id]->_y = y;
+		_sessionMgr->objects[id]->_dir = packet->direction;
+
 		_sessionMgr->MoveSession(id, packet);
 	}
 

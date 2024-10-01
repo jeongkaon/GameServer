@@ -39,7 +39,7 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	_hp = 100;
 
 	sprintf_s(_name, "NPC%d", _id);
-
+	
 
 	switch (visual)
 	{
@@ -67,6 +67,7 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 		break;
 	}
 
+	//일단 처음은 끈다 -> 캐릭터가 깨웠을 때 활성화하는거임
 	_is_active = false;
 	_is_agro = false;
 
@@ -104,20 +105,20 @@ void NPC::DoRandomMove()
 	
 	switch (rand()%4)
 	{
-	case 0:
+	case RIGHT:
 		if (x < (W_WIDTH - 1)) x++; 
 		_dir = RIGHT;
 		break;
-	case 1:
+	case LEFT:
 		if (x > 0) x--;
 		_dir = LEFT;
 
 		break;
-	case 2:
+	case DOWN:
 		if (y < (W_HEIGHT - 1)) y++;
 		_dir = DOWN;
 		break;
-	case 3:
+	case UP:
 		if(y > 0) y--;
 		_dir = UP;
 		break;
@@ -125,11 +126,12 @@ void NPC::DoRandomMove()
 		break;
 	}
 
+	if (_mapMgr->IsCanGoCheck(_x, _y)) {
+		_x = x;
+		_y = y;
 
-	//astar이동을 해보자.
+	}
 
-	_x = x;
-	_y = y;
 
 	int preCol = _sectorCol;
 	int preRow = _sectorRow;
@@ -177,16 +179,19 @@ void NPC::DoAstarMove(int desx ,int desy)
 
 }
 
+bool NPC::isCanGo(short x, short y)
+{
+	return false;
+}
+
 
 
 void NPC::OnAttackSuccess(int type)
 {
 }
 
-bool NPC::OnAttackReceived(int damage)
+bool NPC::OnAttackReceived(int damage, int dir)
 {
-
-
 	_hp -= damage;
 
 
@@ -196,6 +201,32 @@ bool NPC::OnAttackReceived(int damage)
 		SessionManager::sector[_sectorCol][_sectorRow].EraseObjectInSector(_id);
 
 		return true;
+	}
+	short x = _x;
+	short y = _y;
+
+	switch (dir)
+	{
+	case RIGHT:
+		if (x < (W_WIDTH - 1)) x++;
+		break;
+	case LEFT:
+		if (x > 0) x--;
+
+		break;
+	case DOWN:
+		if (y < (W_HEIGHT - 1)) y++;
+		break;
+	case UP:
+		if (y > 0) y--;
+		_dir = UP;
+		break;
+	default:
+		break;
+	}
+	if (_mapMgr->IsCanGoCheck(x, y)) {
+		_x = x;
+		_y = y;
 	}
 	return false;
 	

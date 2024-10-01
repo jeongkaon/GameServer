@@ -44,6 +44,8 @@ public:
 	//npc°ü·Ã
 	void NpcRandomMove(int id);
 	void NpcAstarMove(int id, int target);
+	void NpcAttackedMove(int id);
+
 	bool NpcAgroActive(int npc, int plyaer);
 	void SleepNPC(int id);
 
