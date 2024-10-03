@@ -5,6 +5,7 @@
 #include "PacketHandler.h"
 #include "MapManager.h"
 #include "DBConnectionPool.h"
+#include "MemoryPool.h"
 
 Server* Server::instance = nullptr;
 
@@ -34,6 +35,9 @@ void Server::Init()
 
 	_packetMgr = new PacketHandler();
 	_packetMgr->Init(_sessionMgr, _mapMgr, _dbConnPool);
+
+	//카운틀르 보통 몇으로 두는거지?
+	_memeoryPool = new MemoryPool(sizeof(ExpOver), 1000);
 
 	_numThreads = std::thread::hardware_concurrency();
 
@@ -104,14 +108,17 @@ void Server::Timer()
 			{
 			case EV_RANDOM_MOVE:
 			{
-				ExpOver* ov = new ExpOver;
+				//ExpOver* ov = new ExpOver;
+				ExpOver* ov = _memeoryPool->allocate();
 				ov->_comp_type = OP_NPC_MOVE;
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
 			}
 			case EV_AGRO_MOVE:
 			{
-				ExpOver* ov = new ExpOver;
+				//ExpOver* ov = new ExpOver;
+				ExpOver* ov = _memeoryPool->allocate();
+
 				ov->_comp_type = OP_NPC_AGRO_MOVE;
 				ov->_ai_target_obj = ev.target_id;
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
@@ -119,7 +126,9 @@ void Server::Timer()
 			}
 			case EV_RECOVER_HP:
 			{
-				ExpOver* ov = new ExpOver;
+				//ExpOver* ov = new ExpOver;
+				ExpOver* ov = _memeoryPool->allocate();
+
 				ov->_comp_type = OP_RECOVER_HP;
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
@@ -127,7 +136,9 @@ void Server::Timer()
 			}
 			case EV_NPC_DIE:
 			{
-				ExpOver* ov = new ExpOver;
+				//ExpOver* ov = new ExpOver;
+				ExpOver* ov = _memeoryPool->allocate();
+
 				ov->_comp_type = OP_NPC_RESPAWN;
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
@@ -156,14 +167,18 @@ void Server::Worker()
 				std::cout << "GQCS Error on client[" << key << "]\n";
 
 				_sessionMgr->disconnect(static_cast<int>(key));
-				if (exOver->_comp_type == OP_SEND) delete exOver;
+				if (exOver->_comp_type == OP_SEND) {
+					_memeoryPool->deallocate(exOver);
+				}
 				continue;
 			}
 		}
 
 		if ((0 == io_byte) && ((exOver->_comp_type == OP_RECV) || (exOver->_comp_type == OP_SEND))) {
 			_sessionMgr->disconnect(static_cast<int>(key));
-			if (exOver->_comp_type == OP_SEND) delete exOver;
+			if (exOver->_comp_type == OP_SEND) {
+				_memeoryPool->deallocate(exOver);
+			}
 			continue;
 		}
 
@@ -212,7 +227,7 @@ void Server::Worker()
 
 		}
 		case OP_SEND: {
-			delete exOver;
+			_memeoryPool->deallocate(exOver);
 			break;
 		}
 		case OP_NPC_MOVE: {
@@ -223,7 +238,7 @@ void Server::Worker()
 			int col = _sessionMgr->objects[key]->_sectorCol;
 			int row = _sessionMgr->objects[key]->_sectorRow;
 			
-			unordered_set<int> objs; 
+			unordered_set<int> objs;
 			for (int i = -1; i < 2; ++i) {
 				if (col + i <0 || col + i >SECTOR_NUM) continue;
 				for (int j = -1; j < 2; ++j) {
@@ -251,7 +266,7 @@ void Server::Worker()
 			else {
 				static_cast<NPC*>(_sessionMgr->objects[key])->_is_active = false;
 			}
-			delete exOver;
+			_memeoryPool->deallocate(exOver);
 			break;
 
 		}
@@ -268,7 +283,7 @@ void Server::Worker()
 
 			_sessionMgr->objects[key]->_sLock.unlock();
 
-			delete exOver;
+			_memeoryPool->deallocate(exOver);
 			break;
 		}
 		case OP_RECOVER_HP:
@@ -287,14 +302,14 @@ void Server::Worker()
 			_timerQueue.push(ev);
 
 
-			delete exOver;
+			_memeoryPool->deallocate(exOver);
 			break;
 		}
 		case OP_NPC_RESPAWN:
 		{
 			_sessionMgr->RespawnNPC(key);
 			std::cout << key << "번째 NPC 부활" << std::endl;
-			delete exOver;
+			_memeoryPool->deallocate(exOver);
 			break;
 
 		}
@@ -325,7 +340,7 @@ void Server::Worker()
 
 
 
-			delete exOver;
+			_memeoryPool->deallocate(exOver);
 			break;
 		}
 		}
@@ -375,10 +390,12 @@ void Server::WakeupNpc(int npc, int player)
 			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro, &old_state, true))
 				return;
 
-			ExpOver* exover = new ExpOver;
-			exover->_comp_type = OP_NPC_AGRO_MOVE;
-			exover->_ai_target_obj = player;
-			PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
+			//ExpOver* exover = new ExpOver;
+			ExpOver* ov = _memeoryPool->allocate();
+
+			ov->_comp_type = OP_NPC_AGRO_MOVE;
+			ov->_ai_target_obj = player;
+			PostQueuedCompletionStatus(_iocp, 1, npc, &ov->_over);
 		}
 
 		break;
@@ -392,10 +409,12 @@ void Server::WakeupNpc(int npc, int player)
 			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro, &old_state, true))
 				return;
 
-			ExpOver* exover = new ExpOver;
-			exover->_comp_type = OP_NPC_AGRO_MOVE;
-			exover->_ai_target_obj = player;
-			PostQueuedCompletionStatus(_iocp, 1, npc, &exover->_over);
+		//	ExpOver* exover = new ExpOver;
+			ExpOver* ov = _memeoryPool->allocate();
+
+			ov->_comp_type = OP_NPC_AGRO_MOVE;
+			ov->_ai_target_obj = player;
+			PostQueuedCompletionStatus(_iocp, 1, npc, &ov->_over);
 
 		}
 		else {

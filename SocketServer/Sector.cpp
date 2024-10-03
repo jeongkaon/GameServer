@@ -10,9 +10,9 @@ void Sector::InsertObjectInSector(int id)
 
 void Sector::SetObjectList(unordered_set<int>& obj)
 {
-	_sectorLock.lock();
+	//_sectorLock.lock();
 	obj = _objectIdList;
-	_sectorLock.unlock();
+	//_sectorLock.unlock();
 
 }
 

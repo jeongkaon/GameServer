@@ -25,21 +25,13 @@ public:
 
     ExpOver* allocate() {
         std::lock_guard<std::mutex> lock(mutex); 
-        if (freeIndex < freeBlocks.size()) {
-            return freeBlocks[freeIndex++];
+        
+        if (!(freeIndex < freeBlocks.size())) {
+            pool.resize(blockSize * 1.5);
+            blockCount *= 1.5;
         }
-        else {
-            // TODO. 여기를 더 수정해야한다
-            //여기서 nullptr을 할건지
-            //메모리를 더 늘릴건지를 정해야한다.
-            //늘리자 -> 어떤 정책으로 늘려야하나?
-            //1. 
-           // pool.resize(blockSize * 1.5);
+        return freeBlocks[freeIndex++];
 
-           // blockCount *= 1.5;
-
-            return nullptr; // No more blocks available
-        }
     }
 
     void deallocate(ExpOver* ptr) {
@@ -49,9 +41,6 @@ public:
         }
     }
 
-    void TestPrint(ExpOver* ptr)
-    {
-        printf("%d %d\n", ptr->obj_id, ptr->target_id);
-    }
+ 
 
 };

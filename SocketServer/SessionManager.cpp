@@ -94,7 +94,9 @@ unordered_set<int> SessionManager::UpdateViewlistInSection(const int curCol, con
 		if (curCol + i <0 || curCol + i >SECTOR_NUM) continue;
 		for (int j = -1; j < 2; ++j) {
 			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
+			//여기가 문제인가?
 			sector[curCol + i][curRow + j].SetObjectList(objs);
+
 			for (int clientId : objs) {
 				if (objects[clientId]->_state != ST_INGAME) continue;
 				if (objects[clientId]->_id == id) continue;

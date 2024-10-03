@@ -6,6 +6,7 @@ class PacketHandler;
 class MapManager;
 class DBConnectionPool;
 struct TimerEvent;
+class MemoryPool;
 
 class Server
 {
@@ -29,6 +30,9 @@ private:
     SessionManager* _sessionMgr;
     PacketHandler* _packetMgr;
     DBConnectionPool* _dbConnPool;
+
+    //메모리풀은 여기가 가지고 있어봐라
+    MemoryPool* _memeoryPool;
 
     concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;
 
