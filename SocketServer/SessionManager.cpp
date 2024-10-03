@@ -96,7 +96,7 @@ unordered_set<int> SessionManager::UpdateViewlistInSection(const int curCol, con
 			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
 			//여기가 문제인가?
 			sector[curCol + i][curRow + j].SetObjectList(objs);
-
+			
 			for (int clientId : objs) {
 				if (objects[clientId]->_state != ST_INGAME) continue;
 				if (objects[clientId]->_id == id) continue;
@@ -105,6 +105,8 @@ unordered_set<int> SessionManager::UpdateViewlistInSection(const int curCol, con
 			}
 		}
 	}
+	
+
 	return viewList;
 
 }
