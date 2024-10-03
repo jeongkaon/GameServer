@@ -414,7 +414,7 @@ void Server::WakeupNpc(int npc, int player)
 			static_cast<NPC*>(_sessionMgr->objects[npc])->wakeupTime = nowTime;
 
 
-
+			
 			TimerEvent ev{ npc, chrono::system_clock::now(), EV_RANDOM_MOVE, 0 };
 			_timerQueue.push(ev);
 
