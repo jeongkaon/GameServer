@@ -11,12 +11,10 @@ void Sector::InsertObjectInSector(int id)
 void Sector::SetObjectList(unordered_set<int>& obj)
 {
 	if (_objectIdList.size() == 0) return;
-	
-	_sectorLock.lock();
-	unordered_set<int> temp = _objectIdList;
-	_sectorLock.unlock();
 
-	obj.insert(temp.begin(), temp.end()); // _objectIdList의 모든 요소를 obj에 추가합니다.
+	_sectorLock.lock();
+	obj = _objectIdList;
+	_sectorLock.unlock();
 
 }
 

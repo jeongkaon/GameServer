@@ -11,6 +11,7 @@ SessionManager::SessionManager()
 {
 	server = Server::getInstance();
 
+
 	for (int i = 0; i < MAX_USER; ++i) {
 		objects[i] = new Session();
 	}
@@ -53,8 +54,8 @@ void SessionManager::Init()
 
 			int vis = _npcInfo[i][j] + 10;
 			//test 한다.AGRO_FIXED 초록색 테스트
-			//static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
-			static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, AGRO_FIXED);
+		//	static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
+		static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, AGRO_FIXED);
 
 		}
 	}

@@ -1,7 +1,7 @@
 #pragma once
 #include "ExpOver.h"
 #include "Obejct.h"
-
+#include "MemoryPool.h"
 class Session : public Object
 {
 	ExpOver _recvOver;
@@ -14,12 +14,14 @@ class Session : public Object
 	int _level;
 
 public:
+
 	Session();
 
 	void init(void* p);
 
 	void DoRecv();
 	void DoSend(void* packet);
+	void DoSend(void* packet, ExpOver* sdata);
 
 	void SendLoginPacket();
 	void SendMovePacket(char dir);
@@ -37,6 +39,5 @@ public:
 	bool OnAttackReceived(int damage);
 	void UpdatePlayerExpAndLevel(int visual, int npcId);
 	
-
 };
 

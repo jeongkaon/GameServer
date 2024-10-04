@@ -57,7 +57,15 @@ void Session::DoRecv()
 
 void Session::DoSend(void* packet)
 {
+//	ExpOver* sdata = memPool.allocate();
 	ExpOver* sdata = new ExpOver{ reinterpret_cast<char*>(packet) };
+	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &sdata->_over, 0);
+
+}
+
+void Session::DoSend(void* packet, ExpOver* sdata)
+{
+	sdata->SettingData(reinterpret_cast<char*>(packet));
 	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &sdata->_over, 0);
 
 }

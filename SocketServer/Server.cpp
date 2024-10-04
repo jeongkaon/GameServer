@@ -227,6 +227,7 @@ void Server::Worker()
 
 		}
 		case OP_SEND: {
+			
 			_memeoryPool->deallocate(exOver);
 			break;
 		}

@@ -14,6 +14,7 @@ public:
 public:
 	ExpOver();
 	ExpOver(char* packet);
+	void SettingData(char* packet);
 
 };
 

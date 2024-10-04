@@ -12,7 +12,7 @@ constexpr int W_WIDTH = 2000;
 constexpr int W_HEIGHT = 2000;
 
 //ViewRangme 일단 몬스터 움직이는거 확인하려고 넓힘
-constexpr int VIEW_RANGE = 30;
+constexpr int VIEW_RANGE = 7;
 constexpr int AGRO_ACTIVE_RANGE = 5;
 
 
