@@ -1,6 +1,15 @@
 #include "stdafx.h"
 #include "Session.h"
 
+
+MemoryPool* Session::_memPool = nullptr;
+
+
+void Session::SetMemoryPool(MemoryPool* ptr)
+{
+	_memPool = ptr;
+}
+
 Session::Session()
 {
 	_id = -1;
@@ -57,18 +66,16 @@ void Session::DoRecv()
 
 void Session::DoSend(void* packet)
 {
-//	ExpOver* sdata = memPool.allocate();
-	ExpOver* sdata = new ExpOver{ reinterpret_cast<char*>(packet) };
-	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &sdata->_over, 0);
-
-}
-
-void Session::DoSend(void* packet, ExpOver* sdata)
-{
+	ExpOver* sdata = _memPool->allocate();
+	std::mutex ll;
 	sdata->SettingData(reinterpret_cast<char*>(packet));
-	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &sdata->_over, 0);
 
+	if (sdata->_comp_type < 0) {
+		std::cout << "시발여기야?" << std::endl;
+	}
+	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &(sdata->_over), 0);
 }
+
 
 void Session::SendLoginPacket()
 {
@@ -108,10 +115,8 @@ void Session::SendMovePacket(int id, int x, int y, int time,char dir)
 	p.dir = dir;
 	p.x = x;
 	p.y = y;
-
 	p.move_time = time;
 	DoSend(&p);
-
 
 }
 

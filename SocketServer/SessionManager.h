@@ -4,26 +4,22 @@
 #include "Sector.h"
 #include "Obejct.h"
 class Server;
-
+class MemoryPool;
 
 
 class SessionManager
 {
 public:
-
-
 	std::array<std::array<char, LIMIT_X>, LIMIT_Y> _npcInfo;
-
 	std::array<Object*, MAX_USER + MAX_NPC> objects;
 
 	static Sector sector[SECTOR_NUM][SECTOR_NUM];
 
 	Server* server;
 
-
 public:
 	SessionManager();
-	void Init();
+	void Init(MemoryPool* ptr);
 
 	int AcceptClient(SOCKET& socket);
 	int RetNewClientId();

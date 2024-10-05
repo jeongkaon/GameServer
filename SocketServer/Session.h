@@ -13,7 +13,11 @@ class Session : public Object
 	int _exp;
 	int _level;
 
+	static MemoryPool* _memPool;
+
 public:
+
+	static void SetMemoryPool(MemoryPool* ptr);
 
 	Session();
 
@@ -21,7 +25,6 @@ public:
 
 	void DoRecv();
 	void DoSend(void* packet);
-	void DoSend(void* packet, ExpOver* sdata);
 
 	void SendLoginPacket();
 	void SendMovePacket(char dir);

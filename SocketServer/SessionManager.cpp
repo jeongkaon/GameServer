@@ -2,6 +2,7 @@
 #include "SessionManager.h"
 #include "Server.h"
 #include "LuaFunction.h"
+#include "MemoryPool.h"
 
 using namespace std;
 
@@ -20,8 +21,9 @@ SessionManager::SessionManager()
 	}
 
 }
-void SessionManager::Init()
+void SessionManager::Init(MemoryPool* ptr)
 {
+	Session::SetMemoryPool(ptr);
 
 	ifstream in{ "npc.txt",ios::binary };
 
@@ -162,19 +164,14 @@ void SessionManager::LoginSession(int id)
 						id, objects[id]->_name, objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 				}
 				else {
-					
-					server->WakeupNpc(clientId, id);
 
+					server->WakeupNpc(clientId, id);
 				}
 				objects[id]->SendAddPlayerPacket(clientId, objects[clientId]->_name,
 					objects[clientId]->_x, objects[clientId]->_y, objects[clientId]->_visual);
-
-
-
 			}
 		}
 	}
-
 
 }
 void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)

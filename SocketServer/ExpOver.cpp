@@ -23,9 +23,9 @@ ExpOver::ExpOver(char* packet)
 
 void ExpOver::SettingData(char* packet)
 {
+	ZeroMemory(&_over, sizeof(_over));
 	_wsabuf.len = packet[0];
 	_wsabuf.buf = _io_buf;
-	ZeroMemory(&_over, sizeof(_over));
 	_comp_type = OP_SEND;
 	memcpy(_io_buf, packet, packet[0]);
 

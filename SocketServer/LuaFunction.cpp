@@ -5,6 +5,8 @@
 int API_get_x(lua_State* L)
 {
 	int id = (int)lua_tointeger(L, -1);
+	if (id < 0) return 0;
+
 	lua_pop(L, 2);
 	auto server = Server::getInstance();
 	int x = server->LuaGetX(id);

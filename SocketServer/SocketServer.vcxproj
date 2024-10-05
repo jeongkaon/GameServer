@@ -136,6 +136,7 @@
     <ClCompile Include="LuaFunction.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapManager.cpp" />
+    <ClCompile Include="MemoryPool.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Obejct.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
@@ -152,6 +153,7 @@
     <ClInclude Include="ExpOver.h" />
     <ClInclude Include="LuaFunction.h" />
     <ClInclude Include="MapManager.h" />
+    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="Obejct.h" />
     <ClInclude Include="PacketHandler.h" />

@@ -28,13 +28,10 @@ public:
 	Object();
 
 	virtual void init(void* ){}
-
-	
 	virtual void SendLoginPacket(){}
 	virtual void SendAddPlayerPacket(int , char* ,int,int , int){}
 	virtual void SendMovePacket(char dir){}
 	virtual void SendMovePacket(int, int ,int ,int, char) {}
-
 	virtual void SendRemovePlayerPacket(int){}
 
 
