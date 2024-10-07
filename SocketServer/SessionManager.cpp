@@ -56,13 +56,13 @@ void SessionManager::Init(MemoryPool* ptr)
 
 			int vis = _npcInfo[i][j] + 10;
 			//test 한다.AGRO_FIXED 초록색 테스트
-		//	static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
-		static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, AGRO_FIXED);
+			static_cast<NPC*>(objects[id++])->init(server->_mapMgr,j, i, vis);
+		//static_cast<NPC*>(objects[id++])->init(server->_mapMgr, j, i, AGRO_FIXED);
 
 		}
 	}
 
-	std::cout << "NPC 초기화 테스트중...\n";
+	std::cout << "NPC 초기화 완료...\n";
 
 }
 
@@ -438,7 +438,7 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 
 		}
 		break;
-	case ALL: //4방향공격인데 지금 8방향으로 되어있음..->고쳣나?
+	case ALL: 
 		for(int npcId : vlist){
 			if (abs(static_cast<int>(objects[npcId]->_x- objects[id]->_x)) > ATTACK_RANGE) {
 				continue;

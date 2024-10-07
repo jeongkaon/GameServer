@@ -38,8 +38,6 @@ void Server::Init()
 	_packetMgr = new PacketHandler();
 	_packetMgr->Init(_sessionMgr, _mapMgr, _dbConnPool);
 
-	//카운틀르 보통 몇으로 두는거지?
-
 	_numThreads = std::thread::hardware_concurrency();
 
 }
@@ -119,11 +117,6 @@ void Server::Timer()
 				ExpOver* ov = _memeoryPool->allocate();
 				ov->_comp_type = OP_NPC_AGRO_MOVE;
 
-				//test
-				if (ev.target_id < 0) {
-					cout << "여기?" << endl;
-				}
-				
 				ov->_ai_target_obj = ev.target_id;
 				PostQueuedCompletionStatus(_iocp, 1, ev.obj_id, &ov->_over);
 				break;
@@ -158,17 +151,8 @@ void Server::Worker()
 		ULONG_PTR key;
 		WSAOVERLAPPED* over = nullptr;
 		BOOL ret = GetQueuedCompletionStatus(_iocp, &io_byte, &key, &over, INFINITE);
-
 		ExpOver* exOver = reinterpret_cast<ExpOver*>(over);
-		//TEST용
-		if (exOver->_comp_type < 0) {
-			cout << "여기는 왜 그러르는껄까!" << endl;
-			//session의 send부분이 이상한거같다...
-			//이게 들어오
-			//걍 넘기고 테스트할까 ㅅㅂ 어쩌라구 시발 고치긴해야함
-			return;
 
-		}
 
 		if (FALSE == ret) {
 			if (exOver->_comp_type == OP_ACCEPT) std::cout << "Accept Error";
@@ -344,9 +328,6 @@ void Server::Worker()
 
 			_sessionMgr->objects[key]->_sLock.unlock();
 
-			if (exOver->_ai_target_obj < 0) {
-				cout << "아 여기왜저래~!" << endl;
-			}
 			TimerEvent ev{ key, chrono::system_clock::now() + 1s, EV_AGRO_MOVE, exOver->_ai_target_obj };
 			_timerQueue.push(ev);
 
@@ -373,9 +354,7 @@ int Server::LuaGetY(int id)
 
 void Server::WakeupNpc(int npc, int player)
 {
-	if (player < 0) {
-		cout << "여기를 한번살펴보자.\n";
-	}
+	
 
 	switch (_sessionMgr->objects[npc]->_visual)
 	{
@@ -406,20 +385,11 @@ void Server::WakeupNpc(int npc, int player)
 			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro, &old_state, true))
 				return;
 
-			//ExpOver* exover = new ExpOver;
-			//여기가 문제인거같은데요~~~??
 			ExpOver* ov = _memeoryPool->allocate();
-
-			if (player < 0) {
-				cout << "여기다" << endl;
-			}
 
 			ov->_comp_type = OP_NPC_AGRO_MOVE;
 			ov->_ai_target_obj = player;
 			
-			//여기도 문제인거같고..ㅅㅄㅄㅄ
-
-
 			PostQueuedCompletionStatus(_iocp, 1, npc, &ov->_over);
 		}
 
@@ -434,22 +404,15 @@ void Server::WakeupNpc(int npc, int player)
 			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_agro, &old_state, true))
 				return;
 
-		//	ExpOver* exover = new ExpOver;
 			ExpOver* ov = _memeoryPool->allocate();
 
 			ov->_comp_type = OP_NPC_AGRO_MOVE;
-
-			//디버그
-			if (player < 0) {
-				cout << "여기다" << endl;
-			}
 			ov->_ai_target_obj = player;
 			PostQueuedCompletionStatus(_iocp, 1, npc, &ov->_over);
 
 		}
 		else {
 
-			//랜덤이동
 			bool old_state = false;
 			if (false == atomic_compare_exchange_strong(&static_cast<NPC*>(_sessionMgr->objects[npc])->_is_active, &old_state, true))
 				return;
