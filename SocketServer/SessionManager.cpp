@@ -97,7 +97,6 @@ unordered_set<int> SessionManager::UpdateViewlistInSection(const int curCol, con
 		if (curCol + i <0 || curCol + i >SECTOR_NUM) continue;
 		for (int j = -1; j < 2; ++j) {
 			if (curRow + j <0 || curRow + j >SECTOR_NUM) continue;
-			//여기가 문제인가?
 			sector[curCol + i][curRow + j].SetObjectList(objs);
 			
 			for (int clientId : objs) {
@@ -411,11 +410,6 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 	unordered_set<int> vlist = objects[id]->_viewList;
 	objects[id]->_vl.unlock();
 
-	for (int npcId : vlist)	{
-		std::cout <<"viewlist에 들어온 npc :" << npcId << std::endl;
-	}
-	std::cout<<std::endl;
-
 	switch (dir)
 	{
 	case LEFT:
@@ -466,7 +460,6 @@ void SessionManager::AttackSessionToNPC(int id, char dir)
 }
 void SessionManager::Attack(int npcId, int id)
 {
-	cout <<npcId <<"번의 NPC 공격성공\n";
 
 	static_cast<Session*>(objects[id])->SendAttackSuccessPakcet(npcId, objects[id]->_damage);
 
@@ -498,9 +491,6 @@ void SessionManager::Attack(int npcId, int id)
 
 	
 	if (objects[npcId]->_visual == PEACE_FIXED || objects[npcId]->_visual == PEACE_ROAMING) return;;
-	//이거 공격받으면 잠시 멈추는거임 
-	TimerEvent* ev = new TimerEvent{ npcId,  std::chrono::system_clock::now() + 1s ,EV_ACTIVE_MOVE,0 };
-	server->InputTimerEvent(ev);
 
 
 }

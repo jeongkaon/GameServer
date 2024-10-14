@@ -9,13 +9,11 @@ void MemoryPool::ResizePool()
     while (temp->next) {
         temp = temp->next;
     }
-
     temp->next = newnode;
 
     for (size_t i = 0; i < blockCount; ++i) {
         freeBlocks.emplace_back(&(newnode->pool[i]));
     }
-    std::cout << "ResizePool\n";
 }
 
 MemoryPool::MemoryPool(size_t blockSize, size_t blockCount)
@@ -37,12 +35,8 @@ ExpOver* MemoryPool::allocate()
     return freeBlocks[freeIndex++];
 }
 
-
-
 void MemoryPool::deallocate(ExpOver* ptr)
 {
     std::lock_guard<std::mutex> lock(mutex);
-   // if (ptr >= pool.data() && ptr < pool.data() + pool.size()) {
-        freeBlocks[--freeIndex] = ptr;
-    //}
+    freeBlocks[--freeIndex] = ptr;
 }

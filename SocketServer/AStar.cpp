@@ -36,7 +36,6 @@ AStar::AStar()
 AStar::AStar(int startX, int startY, int destX, int destY)
     : startX(startX), startY(startY), destX(destX), destY(destY)
 {
-    // 배열 크기를 충분히 크게 설정합니다. 예를 들어 40x40으로 설정합니다.
 
 }
 void AStar::init(int x, int y, int destx, int desty)
@@ -53,8 +52,6 @@ void AStar::init(int x, int y, int destx, int desty)
 }
 void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
 {
-
-    
 
     std::vector<std::vector<bool>> closed(AstaSize, std::vector<bool>(AstaSize, false));
     std::vector<std::vector<int>> best(AstaSize, std::vector<int>(AstaSize, INT32_MAX));
@@ -82,14 +79,12 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
         if (nodeXIdx < 0 || nodeXIdx >= AstaSize || nodeYIdx < 0 || nodeYIdx >= AstaSize)
             continue;
 
-
-        // 이미 방문한 곳이면 스킵
-        if (closed[nodeYIdx][nodeXIdx])
-            continue;
+        //이미 방문한 곳이면 스킵
+        if (closed[nodeYIdx][nodeXIdx]) continue;
 
         closed[nodeYIdx][nodeXIdx] = true;
 
-        // 목적지에 도착하면 종료
+        //목적지에 도착하면 종료
         if (node.x == destX && node.y == destY) {
             break;
         }
@@ -101,29 +96,29 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
             int nextXIdx = nextX - startX + HalfAstaSize;
             int nextYIdx = nextY - startY + HalfAstaSize;
 
-            // 인덱스가 유효한 범위 내에 있는지 확인
+            //인덱스가 유효한 범위 내에 있는지 확인
             if (nextXIdx < 0 || nextXIdx >= AstaSize || nextYIdx < 0 || nextYIdx >= AstaSize)
                 continue;
 
-            // 갈 수 있는 지역인지 확인
+            //갈 수 있는 지역인지 확인
             if (!mapMgr->IsCanGoCheck(nextX, nextY)) {
                 continue;
             }
 
-            // 이미 방문한 곳이면 스킵
+            //이미 방문한 곳이면 스킵
             if (closed[nextYIdx][nextXIdx]) {
                 continue;
             }
 
-            // 비용 계산
+            //비용 계산
             int g = node.g + cost[dir];
             int h = 10 * (abs(destY - nextY) + abs(destX - nextX));
 
-            // 다른 경로에서 더 빠른 길을 찾았으면 스킵
+            //다른 경로에서 더 빠른 길을 찾았으면 스킵
             if (best[nextYIdx][nextXIdx] <= g + h)
                 continue;
 
-            // 예약 진행
+            //예약 진행
             best[nextYIdx][nextXIdx] = g + h;
             pq.push(PQNode{ g + h, g, nextX, nextY });
 
@@ -131,13 +126,13 @@ void AStar::FindPath(MapManager* mapMgr, std::vector<std::pair<int, int>>* path)
         }
     }
 
-    // 거꾸로 거슬러 올라간다
+    //거꾸로 거슬러 올라간다
     std::pair<int, int> pos{ destX, destY };
     path->clear();
     while (true) {
         path->push_back(pos);
 
-        // 시작점은 자신이 곧 부모이다
+        //시작점은 자신이 곧 부모이다
         if (pos == parent[pos]) {
             break;
         }

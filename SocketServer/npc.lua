@@ -4,7 +4,6 @@ function set_uid(x)
    myid = x;
 end
 
---어그로 검사하기
 function event_player_move(player)
    player_x = API_get_x(player)
    player_y = API_get_y(player)
@@ -12,7 +11,7 @@ function event_player_move(player)
    my_y = API_get_y(myid)
 
    if math.abs(player_x - my_x) <= 1 and math.abs(player_y - my_y) <= 1 then
-      API_SendMessage(myid, player, "ATTACK")
+      API_AttackMessage(myid, player, "ATTACK")
    end
 end
 

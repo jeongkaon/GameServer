@@ -28,11 +28,7 @@ int API_Active_Agro(lua_State* L)
 	int agro_id = (int)lua_tointeger(L, -2);
 	int target_id = (int)lua_tointeger(L, -1);
 
-	//어그로몬스터 타켓을 받아오자
-	std::cout << agro_id << "몬스터가 " << target_id << "를 타겟으로 삼음" << std::endl;
-
 	lua_pop(L, 3);
-	//clients[user_id].send_chat_packet(my_id, mess);
 	return 0;
 }
 
@@ -42,11 +38,13 @@ int API_Attck_To_Player(lua_State* L)
 
 }
 
-int API_SendMessage(lua_State* L)
+int API_AttackMessage(lua_State* L)
 {
 	int my_id = (int)lua_tointeger(L, -3);
 	int user_id = (int)lua_tointeger(L, -2);
 	char* mess = (char*)lua_tostring(L, -1);
+
+	//TODO. 여기서 attack관련 일 처리해야한다
 	std::cout << mess << std::endl;
 
 	lua_pop(L, 4);

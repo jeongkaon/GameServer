@@ -31,7 +31,6 @@ private:
     PacketHandler* _packetMgr;
     DBConnectionPool* _dbConnPool;
 
-    //메모리풀은 여기가 가지고 있어봐라
     MemoryPool* _memeoryPool;
 
     concurrency::concurrent_priority_queue<TimerEvent> _timerQueue;

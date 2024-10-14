@@ -70,9 +70,7 @@ void Session::DoSend(void* packet)
 	std::mutex ll;
 	sdata->SettingData(reinterpret_cast<char*>(packet));
 
-	if (sdata->_comp_type < 0) {
-		std::cout << "시발여기야?" << std::endl;
-	}
+
 	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &(sdata->_over), 0);
 }
 
@@ -245,26 +243,21 @@ void Session::UpdatePlayerExpAndLevel(int visual, int npcId)
 	switch (_exp / 100)
 	{
 	case LEVEL2:
-		std::cout << "LEVEL2 업그레이드\n";
 		_level = 2;
 		break;
 	case LEVEL3:
-		std::cout << "LEVEL3 업그레이드\n";
 		_level = 3;
 		break;
 	case LEVEL4:
-		std::cout << "LEVEL4 업그레이드\n";
 		_level = 4;
 		break;
 	case LEVEL5:
-		std::cout << "LEVEL5 업그레이드\n";
 		_level = 5;
 		break;
 	default:
 		break;
 	}
 
-	//이거를 레벨이랑 경험치를 같이보내자
 	SendPlayerGetExpAndLv(npcId);
 
 

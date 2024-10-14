@@ -186,7 +186,6 @@ void Server::Worker()
 					_iocp, clientId, 0);
 				static_cast<Session*>(_sessionMgr->objects[clientId])->DoRecv();
 				_clientSocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
-				std::cout << "User Accept.\n";
 			}
 			else {
 				std::cout << "Max user exceeded.\n";
@@ -302,7 +301,6 @@ void Server::Worker()
 		case OP_NPC_RESPAWN:
 		{
 			_sessionMgr->RespawnNPC(key);
-			std::cout << key << "번째 NPC 부활" << std::endl;
 			_memeoryPool->deallocate(exOver);
 			break;
 
@@ -397,7 +395,6 @@ void Server::WakeupNpc(int npc, int player)
 	}
 	case AGRO_ROAMING:
 	{
-		//어그로 래인지에 들어왔는지 확인
 		if (_sessionMgr->NpcAgroActive(npc, player)) {
 
 			bool old_state = false;
@@ -446,7 +443,6 @@ void Server::WakeupNpc(int npc, int player)
 void Server::InputTimerEvent(TimerEvent* ev)
 {
 	_timerQueue.push(*ev);
-	//delete ev;
 }
 
 

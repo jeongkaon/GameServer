@@ -5,11 +5,9 @@
 #include "DBConnectionPool.h"
 
 wchar_t* ConvertToWideChar(const char* str) {
-	// 필요한 버퍼 크기 계산
 	size_t len = strlen(str) + 1;
 	wchar_t* buffer = new wchar_t[len];
 
-	// 변환
 	mbstowcs(buffer, str, len);
 
 	return buffer;
@@ -86,7 +84,6 @@ void PacketHandler::ProcessLoginPacket(int id, char* buf, int copySize)
 		break;
 	}
 
-	std::cout << std::endl;
 
 }
 
@@ -111,7 +108,6 @@ void PacketHandler::ProcessStressLoginPacket(int id, char* buf, int copySize)
 
 	AddUSerInDB(&userData);
 
-	std::cout << std::endl;
 
 }
 
@@ -263,13 +259,11 @@ bool PacketHandler::AddVisualInfoInDB(const char* name, int visual)
 		L"UPDATE game_server.dbo.game_data_table SET user_visual = %d		\
 		WHERE user_name = '%s'",	visual, ConvertToWideChar(name));
 
-
-	//wsprintf(query, L"UPDATE Table_3 SET user_x = %d, user_y = %d, user_EXP = %d, user_HP = %d, user_LEVEL = %d WHERE user_id = %d", x, y, exp, hp, level, keyid);
+	
 	SQLLEN len = 0;
 	dbConn->BindParam(1, name, &len);
 	dbConn->BindParam(7, &visual, &len);
 
-	std::cout << "등록완료?" << std::endl;
 	dbConn->Excute(query);
 
 	_dbConnPool->Push(dbConn);

@@ -87,7 +87,7 @@ void NPC::init(MapManager* mgr, int x, int y, int visual)
 	lua_pushnumber(_L, _id);
 	lua_pcall(_L, 1, 0, 0);
 
-	lua_register(_L, "API_SendMessage", API_SendMessage);
+	lua_register(_L, "API_SendMessage", API_AttackMessage);
 	lua_register(_L, "API_get_x", API_get_x);
 	lua_register(_L, "API_get_y", API_get_y);
 	lua_register(_L, "API_Active_Agro", API_Active_Agro);
@@ -197,7 +197,6 @@ bool NPC::OnAttackReceived(int damage, int dir)
 
 	if (_hp <= 0) {
 		std::cout << _id <<" 몬스터는 죽음" << std::endl;
-		//죽었는데 왜 움직임? 죽었어도 타이머가 돌아가는거 같은데? -> 타이머는 막았는데 쩝 다시 살아나니 활성화가 안됨;
 		SessionManager::sector[_sectorCol][_sectorRow].EraseObjectInSector(_id);
 
 		return true;
