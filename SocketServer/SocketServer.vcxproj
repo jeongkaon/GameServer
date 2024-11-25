@@ -140,6 +140,7 @@
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Obejct.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
+    <ClCompile Include="ReadWriteLock.cpp" />
     <ClCompile Include="Sector.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Session.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Obejct.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="protocol_2024.h" />
+    <ClInclude Include="ReadWriteLock.h" />
     <ClInclude Include="Sector.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Session.h" />

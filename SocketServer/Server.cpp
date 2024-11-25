@@ -67,7 +67,7 @@ void Server::Start()
 	_timerThread = std::thread(&Server::Timer, this);
 
 	for (int i = 0; i < _numThreads; ++i)
-		_workerThread.emplace_back(&Server::Worker,this);
+		_workerThread.emplace_back(&Server::Worker,10, this);
 
 
 
@@ -144,8 +144,9 @@ void Server::Timer()
 	}
 
 }
-void Server::Worker()
+void Server::Worker(int tid)
 {
+	_threadId = tid;
 	while (true) {
 		DWORD io_byte;
 		ULONG_PTR key;

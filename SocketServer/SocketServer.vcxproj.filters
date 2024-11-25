@@ -66,6 +66,9 @@
     <ClCompile Include="MemoryPool.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ReadWriteLock.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -117,6 +120,9 @@
       <Filter>소스 파일\Path</Filter>
     </ClInclude>
     <ClInclude Include="MemoryPool.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ReadWriteLock.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

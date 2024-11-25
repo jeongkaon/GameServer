@@ -12,6 +12,7 @@ class Server
 {
 private:
     int _numThreads;
+    thread_local static int _threadId;
 
     std::thread _timerThread;
     std::vector<std::thread> _workerThread;
@@ -52,7 +53,7 @@ public:
     void Start();
     void Stop();
 
-    void Worker();
+    void Worker(int tid);
     void Timer();
 
 
