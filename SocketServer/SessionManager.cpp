@@ -191,9 +191,9 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 		sector[curCol][curRow].InsertObjectInSector(objects[id]->_id);
 	}
 	
-	objects[id]->_vl.lock();
+	objects[id]->_vl.ReadLock();
 	unordered_set<int> old_vlist = objects[id]->_viewList;
-	objects[id]->_vl.unlock();
+	objects[id]->_vl.ReadUnlock();
 
 	unordered_set<int> new_viewlist = UpdateViewlistInSection(curCol, curRow, id);
 
@@ -201,13 +201,13 @@ void SessionManager::MoveSession(int id, CS_MOVE_PACKET* packet)
 
 	for (int objId : new_viewlist) {
 		if (objId < MAX_USER) {
-			objects[objId]->_vl.lock();
+			objects[objId]->_vl.ReadLock();
 			if (objects[objId]->_viewList.count(id)) {
-				objects[objId]->_vl.unlock();
+				objects[objId]->_vl.ReadUnlock();
 				objects[objId]->SendMovePacket(id, x, y, objects[id]->last_move_time,dir);
 			}
 			else {
-				objects[objId]->_vl.unlock();
+				objects[objId]->_vl.ReadUnlock();
 				objects[objId]->SendAddPlayerPacket(id, objects[id]->_name, 
 					objects[id]->_x, objects[id]->_y, objects[id]->_visual);
 			}
@@ -288,13 +288,13 @@ void SessionManager::NpcRandomMove(int id)
 	}
 	for (auto pl : old_vl) {
 		if (0 == new_viewlist.count(pl)) {
-			objects[pl]->_vl.lock();
+			objects[pl]->_vl.ReadLock();
 			if (0 != objects[pl]->_viewList.count(objects[id]->_id)) {
-				objects[pl]->_vl.unlock();
+				objects[pl]->_vl.ReadUnlock();
 				objects[pl]->SendRemovePlayerPacket(objects[id]->_id);
 			}
 			else {
-				objects[pl]->_vl.unlock();
+				objects[pl]->_vl.ReadUnlock();
 			}
 		}
 	}
@@ -334,13 +334,13 @@ bool SessionManager::NpcAstarMove(int id, int target)
 	}
 	for (auto pl : old_vl) {
 		if (0 == new_viewlist.count(pl)) {
-			objects[pl]->_vl.lock();
+			objects[pl]->_vl.ReadLock();
 			if (0 != objects[pl]->_viewList.count(objects[id]->_id)) {
-				objects[pl]->_vl.unlock();
+				objects[pl]->_vl.ReadUnlock();
 				objects[pl]->SendRemovePlayerPacket(objects[id]->_id);
 			}
 			else {
-				objects[pl]->_vl.unlock();
+				objects[pl]->_vl.ReadUnlock();
 			}
 		}
 	}
@@ -374,13 +374,13 @@ void SessionManager::NpcAttackedMove(int id)
 	}
 	for (auto pl : old_vl) {
 		if (0 == new_viewlist.count(pl)) {
-			objects[pl]->_vl.lock();
+			objects[pl]->_vl.ReadLock();
 			if (0 != objects[pl]->_viewList.count(objects[id]->_id)) {
-				objects[pl]->_vl.unlock();
+				objects[pl]->_vl.ReadUnlock();
 				objects[pl]->SendRemovePlayerPacket(objects[id]->_id);
 			}
 			else {
-				objects[pl]->_vl.unlock();
+				objects[pl]->_vl.ReadUnlock();
 			}
 		}
 	}
@@ -406,9 +406,9 @@ void SessionManager::SleepNPC(int id)
 }
 void SessionManager::AttackSessionToNPC(int id, char dir)
 {
-	objects[id]->_vl.lock();
+	objects[id]->_vl.ReadLock();
 	unordered_set<int> vlist = objects[id]->_viewList;
-	objects[id]->_vl.unlock();
+	objects[id]->_vl.ReadUnlock();
 
 	switch (dir)
 	{

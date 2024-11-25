@@ -1,4 +1,6 @@
 #pragma once
+#include "ReadWriteLock.h"
+
 class Object
 {
 public:
@@ -10,7 +12,7 @@ public:
 	int _sectorCol;
 	int _sectorRow;
 
-	std::mutex	_vl;
+	ReadWriteLock	_vl;
 	std::unordered_set<int> _viewList;
 
 	int		last_move_time;

@@ -140,7 +140,10 @@
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Obejct.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
-    <ClCompile Include="ReadWriteLock.cpp" />
+    <ClCompile Include="ReadWriteLock.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Sector.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Session.cpp" />
@@ -159,7 +162,10 @@
     <ClInclude Include="Obejct.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="protocol_2024.h" />
-    <ClInclude Include="ReadWriteLock.h" />
+    <ClInclude Include="ReadWriteLock.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Sector.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Session.h" />

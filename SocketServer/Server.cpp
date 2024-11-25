@@ -146,7 +146,6 @@ void Server::Timer()
 }
 void Server::Worker(int tid)
 {
-	_threadId = tid;
 	while (true) {
 		DWORD io_byte;
 		ULONG_PTR key;

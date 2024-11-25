@@ -3,21 +3,13 @@
 
 void ReadWriteLock::WriteLock()
 {
-	const int lockThreadId = (_lockFlag.load() & WRITE_THREAD_MASK) >> 8;
-	//LThreadId를 어디서 받아와야하는지를 생각해보자.
-	if (LThreadId == lockThreadId)
-	{
-		_writeCount++;
-		return;
-	}
-
 	const long beginTick = ::GetTickCount64();
-	const short desired = ((LThreadId << 8) & WRITE_THREAD_MASK);
+	const short desired = ((0xFF00) & WRITE_THREAD_MASK);
 	while (true)
 	{
 		for (int spinCount = 0; spinCount < MAX_SPIN_COUNT; spinCount++)
 		{
-			short expected = EMPTY_FLAG;
+			short expected = WRITE_FLAG;
 			if (_lockFlag.compare_exchange_strong(expected, desired))
 			{
 				_writeCount++;
@@ -51,17 +43,13 @@ void ReadWriteLock::WriteUnlock()
 void ReadWriteLock::ReadLock()
 {
 	const int lockThreadId = (_lockFlag.load() & WRITE_THREAD_MASK) >> 16;
-	if (LThreadId == lockThreadId)
-	{
-		_lockFlag.fetch_add(1);
-		return;
-	}
+
 	const long beginTick = ::GetTickCount64();
 	while (true)
 	{
 		for (int spinCount = 0; spinCount < MAX_SPIN_COUNT; spinCount++)
 		{
-			int expected = (_lockFlag.load() & READ_COUNT_MASK);
+			short expected = (_lockFlag.load() & READ_COUNT_MASK);
 			if (_lockFlag.compare_exchange_strong(OUT expected, expected + 1))
 				return;
 		}

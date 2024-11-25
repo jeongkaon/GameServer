@@ -57,6 +57,9 @@ void Session::DoRecv()
 {
 	DWORD recv_flag = 0;
 	ZeroMemory(&_recvOver._over, sizeof(_recvOver._over));
+	
+	//recv버퍼 도입하면 여기를 바꿔야한다.
+	
 	_recvOver._wsabuf.len = BUF_SIZE - _prevRemain;
 	_recvOver._wsabuf.buf = _recvOver._io_buf + _prevRemain;
 
@@ -69,7 +72,6 @@ void Session::DoSend(void* packet)
 	ExpOver* sdata = _memPool->allocate();
 	std::mutex ll;
 	sdata->SettingData(reinterpret_cast<char*>(packet));
-
 
 	WSASend(_socket, &sdata->_wsabuf, 1, 0, 0, &(sdata->_over), 0);
 }
@@ -120,10 +122,9 @@ void Session::SendMovePacket(int id, int x, int y, int time,char dir)
 
 void Session::SendAddPlayerPacket(int id, char* name, int x, int y, int visual)
 {
-
-	_vl.lock();
+	_vl.WriteLock();
 	_viewList.insert(id);
-	_vl.unlock();
+	_vl.WriteUnlock();
 
 	SC_ADD_OBJECT_PACKET add_packet;
 	add_packet.id = id;
@@ -139,15 +140,15 @@ void Session::SendAddPlayerPacket(int id, char* name, int x, int y, int visual)
 
 void Session::SendRemovePlayerPacket(int id)
 {
-	_vl.lock();
+	_vl.WriteLock();
 	if (_viewList.count(id)) {
 		_viewList.erase(id);
 	}
 	else {
-		_vl.unlock();
+		_vl.WriteUnlock();
 		return;
 	}
-	_vl.unlock();
+	_vl.WriteUnlock();
 
 	SC_REMOVE_OBJECT_PACKET p;
 	p.id = id;

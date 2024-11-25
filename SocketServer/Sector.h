@@ -1,9 +1,11 @@
 #pragma once
 using namespace std;
 
+#include "ReadWriteLock.h"
+
 class Sector
 {
-	mutex _sectorLock;
+	ReadWriteLock _sectorLock;
 	unordered_set<int> _objectIdList;
 
 public:
